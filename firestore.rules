@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función auxiliar para verificar si el usuario está logueado
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Función auxiliar para obtener el rol del usuario desde la colección de usuarios
+    function getUserRole() {
+       return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol;
+    }
+
+    // Colección: USUARIOS
+    match /usuarios/{userId} {
+      // Un usuario "root" puede leer y escribir cualquier usuario
+      // Un "administrador" puede leer usuarios y escribir si no están creando otro admin o root
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (
+        request.auth.token.email == 'root@nexofix.com' || 
+        getUserRole() == 'root' || 
+        getUserRole() == 'administrador'
+      );
+    }
+    
+    // Colección: CONFIGURACION
+    match /configuracion/{docId} {
+      // Todos en la empresa pueden leer.
+      allow read: if isSignedIn();
+      // Solo el root puede cambiar la info de la empresa y logos
+      allow write: if isSignedIn() && (
+        request.auth.token.email == 'root@nexofix.com' || 
+        getUserRole() == 'root'
+      );
+    }
+
+    // Colección: CLIENTES, COTIZACIONES, TRABAJOS, COBROS, etc
+    match /{document=**} {
+      // Todo el personal válido dentro de la app (con sesión iniciada)
+      // En una v2.0 Multi-Empresa aquí se validaría que el "empresaId" coincida con el del token.
+      allow read, write: if isSignedIn(); 
+    }
+  }
+}

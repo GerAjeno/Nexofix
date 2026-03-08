@@ -1,0 +1,6 @@
+# Changelog - NexoFix
+
+## [08-03-2026 16:04:36]
+- Inicialización de nuevo log `changelog.txt`.
+- Inicialización de nuevo log `conversation_history.txt`.
+- Cambio de arquitectura de Firebase (servicios cloud) a una estructura local completa (Express.js, base de datos SQLite y File System en servidor Ubuntu).
