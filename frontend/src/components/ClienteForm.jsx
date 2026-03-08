@@ -33,7 +33,7 @@ export default function ClienteForm({ onClose, onSave, cliente = null }) {
     e.preventDefault();
     setError(null);
 
-    // Validate specific fields
+    // Validar campos específicos obligatorios
     if (!formData.nombre || !formData.rut || !formData.tipo) {
       setError('Nombre, RUT y Tipo son obligatorios.');
       return;

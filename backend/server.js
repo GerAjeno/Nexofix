@@ -9,11 +9,11 @@ import clientesRoutes from './routes/clientes.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Set up file uploads
+// Configurar el directorio para subida de archivos
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -29,15 +29,15 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Routes
+// Rutas de API
 app.use('/api/clientes', clientesRoutes);
 
-// File upload endpoint for special notes/images
+// Endpoint de subida de archivos para notas especiales o imágenes
 app.post('/api/upload', upload.single('imagen'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
-  // Return the path relative to the server so frontend can store it
+  // Retornar la ruta relativa al servidor para que el frontend pueda registrarla
   res.status(200).json({ 
     message: 'Imagen subida exitosamente', 
     filename: req.file.filename,
@@ -45,14 +45,14 @@ app.post('/api/upload', upload.single('imagen'), (req, res) => {
   });
 });
 
-// Serve static files from 'uploads' directory
+// Servir archivos estáticos desde el directorio 'uploads'
 app.use('/uploads', express.static(uploadDir));
 
-// Basic health route
+// Ruta básica de salud y comprobación de estado de la API
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'NexoFix API is running' });
+  res.json({ status: 'ok', message: 'La API de NexoFix está en funcionamiento' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });

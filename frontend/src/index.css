@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  /* LIGHT THEME VARIABLES */
+  /* VARIABLES DEL TEMA CLARO */
   --primary: #4361ee;
   --primary-hover: #3a0ca3;
   --bg-color: #f8f9fa;
@@ -28,7 +28,7 @@
 }
 
 [data-theme="dark"] {
-  /* AMOLED TRUE BLACK THEME VARIABLES */
+  /* VARIABLES DEL TEMA OSCURO AMOLED TRUE BLACK */
   --primary: #00f2fe;
   --primary-hover: #4facfe;
   --bg-color: #000000;      /* AMOLED Black */
@@ -45,7 +45,7 @@
   --shadow-sm: 0 4px 6px rgba(0,0,0,0.3);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
   
-  --success: #00f2fe; /* vibrant cyan/blue */
+  --success: #00f2fe; /* cian/azul vibrante */
   --warning: #f59e0b;
 }
 
@@ -63,7 +63,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom Scrollbar */
+/* Barra de Desplazamiento Personalizada */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -84,7 +84,7 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar */
+/* Barra Lateral */
 .sidebar {
   width: 260px;
   background-color: var(--sidebar-bg);
@@ -165,7 +165,7 @@ body {
   font-weight: 600;
 }
 
-/* Main Layout */
+/* Diseño Principal */
 .main-layout {
   flex: 1;
   display: flex;
@@ -190,13 +190,13 @@ body {
   line-height: 1.5;
 }
 
-/* Removed duplicate app-container */
+/* Contenedor app-container duplicado eliminado */
 
-/* Removed old header styles */
+/* Estilos antiguos del encabezado eliminados */
 
-/* Removed old main content overrides since they are handled previously */
+/* Estilos antiguos del contenido principal eliminados ya que se manejan arriba */
 
-/* Common Components */
+/* Componentes Comunes */
 .card {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
@@ -283,7 +283,7 @@ body {
   color: white;
 }
 
-/* Dashboard Grid */
+/* Grilla del Dashboard */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -311,7 +311,7 @@ body {
   line-height: 1;
 }
 
-/* Table */
+/* Tabla de Datos */
 .table-container {
   overflow-x: auto;
   background: var(--card-bg);
@@ -376,7 +376,7 @@ body {
   margin-bottom: 1.5rem;
 }
 
-/* Modal CSS */
+/* CSS de la Ventana Modal */
 .modal-overlay {
   position: fixed;
   top: 0;

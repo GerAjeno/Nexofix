@@ -20,10 +20,10 @@ export const dv = (T) => {
 
 export const formatRut = (value) => {
   if (!value) return '';
-  // Remove all non-alphanumeric parameters
+  // Remover todos los caracteres no alfanuméricos
   let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
   if (clean.length <= 1) return clean;
-  // Always set the last character as DV
+  // Siempre fijar el último carácter como Dígito Verificador (DV)
   let result = clean.slice(0, -1) + '-' + clean.slice(-1);
   return result;
 };

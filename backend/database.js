@@ -1,10 +1,10 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
 
-// Define DB path
+// Definir ruta de la BD
 const dbPath = path.join(process.cwd(), 'nexofix.db');
 
-// Connect to SQLite database
+// Conectar a la base de datos SQLite
 export const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error connecting to SQLite database:', err.message);
@@ -16,7 +16,7 @@ export const db = new sqlite3.Database(dbPath, (err) => {
 
 function initDb() {
   db.serialize(() => {
-    // Clientes table
+    // Tabla de Clientes
     db.run(`
       CREATE TABLE IF NOT EXISTS clientes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +36,7 @@ function initDb() {
       )
     `);
 
-    // Add other tables here (Cotizaciones, Trabajos, etc.) later
+    // Agregar otras tablas aquí (Cotizaciones, Trabajos, etc.) más adelante
     
     console.log('Database tables initialized.');
   });

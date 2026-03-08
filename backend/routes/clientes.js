@@ -3,7 +3,7 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// GET all active clientes
+// GET todos los clientes activos
 router.get('/', (req, res) => {
   db.all('SELECT * FROM clientes WHERE activo = 1 ORDER BY id DESC', [], (err, rows) => {
     if (err) {
@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// GET single cliente
+// GET un solo cliente
 router.get('/:id', (req, res) => {
   db.get('SELECT * FROM clientes WHERE id = ?', [req.params.id], (err, row) => {
     if (err) {
@@ -26,22 +26,22 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// POST new cliente
+// POST nuevo cliente
 router.post('/', (req, res) => {
   const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
   
-  // Basic validation
+  // Validación básica
   if (!tipo || !rut || !nombre) {
     return res.status(400).json({ error: 'tipo, rut, and nombre are required' });
   }
 
-  // Check if rut exists
+  // Verificar si el RUT ya existe
   db.get('SELECT id, activo FROM clientes WHERE rut = ?', [rut], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     
     if (row) {
       if (row.activo === 0) {
-        // Reactivate and update instead of failing unique constraint
+        // Reactivar y actualizar en lugar de fallar por restricción única
         const updateSql = `
           UPDATE clientes 
           SET tipo=?, nombre=?, representante=?, telefono=?, email=?, direccion=?, giro=?, notas_texto=?, notas_imagen=?, activo=1, updated_at=CURRENT_TIMESTAMP 
@@ -59,7 +59,7 @@ router.post('/', (req, res) => {
       }
     }
 
-    // Normal INSERT
+    // INSERT normal
     const sql = `
       INSERT INTO clientes (tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, activo)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
@@ -73,7 +73,7 @@ router.post('/', (req, res) => {
   });
 });
 
-// PUT update cliente
+// PUT actualizar cliente
 router.put('/:id', (req, res) => {
   const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
   
@@ -109,7 +109,7 @@ router.put('/:id', (req, res) => {
   });
 });
 
-// DELETE (Soft-Delete / Archive) cliente
+// DELETE (Borrado Suave / Archivar) cliente
 router.delete('/:id', (req, res) => {
   db.run('UPDATE clientes SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {
     if (err) {

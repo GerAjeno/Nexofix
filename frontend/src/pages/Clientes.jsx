@@ -33,9 +33,9 @@ export default function Clientes() {
         await clientesService.create(clienteData);
       }
       setShowModal(false);
-      loadClientes(); // Reload the list
+      loadClientes(); // Recargar la lista
     } catch (err) {
-      throw err; // Form will catch and show error
+      throw err; // El formulario capturará y mostrará el error
     }
   };
 
