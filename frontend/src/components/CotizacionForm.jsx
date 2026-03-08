@@ -262,7 +262,7 @@ export default function CotizacionForm({ onClose, onSave }) {
           
           <form id="cotizacion-form" onSubmit={handleSave}>
             {/* Cabecera */}
-            <div className="dashboard-grid" style={{ marginBottom: '1.5rem' }}>
+            <div className="dashboard-grid" style={{ marginBottom: '1rem' }}>
               <div className="form-group">
                 <label className="form-label">N° Cotización</label>
                 <input 
@@ -273,7 +273,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                   style={{ backgroundColor: 'var(--bg-color)', color: 'var(--primary)', fontWeight: 'bold' }}
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label className="form-label">Cliente (*)</label>
                 <select 
                   className="form-control" 
@@ -287,7 +287,10 @@ export default function CotizacionForm({ onClose, onSave }) {
                   ))}
                 </select>
               </div>
-              <div className="form-group">
+            </div>
+
+            <div className="dashboard-grid" style={{ marginBottom: '1rem' }}>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label className="form-label">Fecha de Emisión (DD/MM/AAAA) (*)</label>
                 <div style={{ position: 'relative' }}>
                   <input 
@@ -310,9 +313,6 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </div>
                 <small style={{ color: '#64748b' }}>Escriba los números seguido.</small>
               </div>
-            </div>
-
-            <div className="dashboard-grid" style={{ marginBottom: '1.5rem' }}>
               <div className="form-group">
                 <label className="form-label">Validez</label>
                 <select 
@@ -325,17 +325,18 @@ export default function CotizacionForm({ onClose, onSave }) {
                   <option value="60 días corridos">60 días corridos</option>
                 </select>
               </div>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                <label className="form-label">Proyecto (*)</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="Ej: Motor portón casa"
-                  value={formData.proyecto}
-                  onChange={e => setFormData({...formData, proyecto: e.target.value})}
-                  required
-                />
-              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Proyecto (*)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Ej: Motor portón casa"
+                value={formData.proyecto}
+                onChange={e => setFormData({...formData, proyecto: e.target.value})}
+                required
+              />
             </div>
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
