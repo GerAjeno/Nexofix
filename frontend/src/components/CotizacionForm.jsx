@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
-import { clientesService } from '../services/clientesService';
+import { clientesService } from '../services/api';
 import { cotizacionesService } from '../services/cotizacionesService';
 
 export default function CotizacionForm({ onClose, onSave }) {
