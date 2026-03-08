@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Menu, X as CloseIcon } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
@@ -9,6 +10,7 @@ import Tickets from './pages/Tickets';
 function App() {
   // Use dark mode by default
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -19,12 +21,34 @@ function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
+
   return (
     <Router>
       <div className="app-container">
-        <Sidebar theme={theme} toggleTheme={toggleTheme} />
+        {/* Mobile Header with Sandwich Button */}
+        <header className="mobile-header">
+          <h1 className="logo" style={{ fontSize: '1.25rem' }}>NexoFix</h1>
+          <button className="menu-btn" onClick={toggleSidebar}>
+            {isSidebarOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
+          </button>
+        </header>
 
-        <div className="main-layout">
+        {/* Overlay for mobile when sidebar is open */}
+        {isSidebarOpen && window.innerWidth <= 768 && (
+          <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+        )}
+
+        <Sidebar 
+          theme={theme} 
+          toggleTheme={toggleTheme} 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+        />
+
+        <div className={`main-layout ${!isSidebarOpen ? 'full-width' : ''}`}>
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
