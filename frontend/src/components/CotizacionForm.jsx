@@ -98,8 +98,14 @@ export default function CotizacionForm({ onClose, onSave }) {
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
-    newItems[index][field] = value;
-    // El useEffect se encargará de recalcular el `total` interno y los globales.
+    
+    if (field === 'precio_unitario') {
+      const rawValue = value.replace(/\D/g, '');
+      newItems[index][field] = rawValue === '' ? 0 : parseInt(rawValue);
+    } else {
+      newItems[index][field] = value;
+    }
+
     setItems(newItems);
   };
 
@@ -173,6 +179,11 @@ export default function CotizacionForm({ onClose, onSave }) {
   const formatDisplayDiscount = (value) => {
     if (!value || value === 0) return '';
     return `- $${value.toLocaleString('es-CL')}`;
+  };
+
+  const formatPrice = (value) => {
+    if (!value && value !== 0) return '';
+    return `$${value.toLocaleString('es-CL')}`;
   };
 
   const handleSave = async (e) => {
@@ -484,10 +495,10 @@ export default function CotizacionForm({ onClose, onSave }) {
                       </td>
                       <td style={{ padding: '0.5rem' }}>
                         <input 
-                          type="number" 
+                          type="text" 
                           className="form-control" 
-                          value={item.precio_unitario}
-                          min="0"
+                          style={{ textAlign: 'right' }}
+                          value={formatPrice(item.precio_unitario)}
                           onChange={(e) => handleItemChange(index, 'precio_unitario', e.target.value)}
                         />
                       </td>
