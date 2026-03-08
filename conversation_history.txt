@@ -123,3 +123,7 @@ Prueba crear uno nuevo, editarlo, o eliminarlo. La funcionalidad ya está corrie
 3. **Reactivación Automática (El problema del RUT)**: Modifiqué el servidor (backend). Cuando intentas registrar a un nuevo cliente, el servidor revisa si ese RUT ya existía. Si estaba "Eliminado" (`activo = 0`), en vez de lanzar el error "El RUT ya está ingresado", el servidor reemplazará toda su información con la que acabas de escribir y lo volverá a marcar como "Activo", reviviéndolo limpiamente y reciclando el historial. 
 
 Abre de nuevo tu web local ([http://localhost:5173](http://localhost:5173)) y verás que ahora todo esto fluye perfectamente. Todo está respaldado en GitHub. ¡Adelante con tu revisión!
+
+[08-03-2026 17:29:46] USER: Al Intentar eliminar a un cliente aparece el mensaje de advertencia que adjunto en la imagen, quiero que se elimine la frase "Esta acción se puede revertir luego contactando soporte"
+
+[08-03-2026 17:30:10] ASSISTANT: Eliminado. Ya quité esa frase del código, ahora el diálogo es mucho más directo: *¿Estás seguro de que deseas eliminar (archivar) al cliente "[Nombre]"?*.

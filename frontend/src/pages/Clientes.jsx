@@ -40,7 +40,7 @@ export default function Clientes() {
   };
 
   const handleDeleteCliente = async (id, nombre) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar (archivar) al cliente "${nombre}"? Esta acción se puede revertir luego contactando soporte.`)) {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar (archivar) al cliente "${nombre}"?`)) {
       try {
         await clientesService.delete(id);
         loadClientes();
