@@ -9,7 +9,6 @@ export default function CotizacionForm({ onClose, onSave }) {
   const [plantillasDesc, setPlantillasDesc] = useState([]);
   const [plantillasCond, setPlantillasCond] = useState([]);
   const [plantillasItems, setPlantillasItems] = useState([]);
-  const [catalogoItems, setCatalogoItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -46,7 +45,6 @@ export default function CotizacionForm({ onClose, onSave }) {
     plantillasService.getTextos('descripcion').then(data => setPlantillasDesc(data)).catch(err => console.error(err));
     plantillasService.getTextos('condiciones').then(data => setPlantillasCond(data)).catch(err => console.error(err));
     plantillasService.getItemizadosPresets().then(data => setPlantillasItems(data)).catch(err => console.error(err));
-    plantillasService.getItems().then(data => setCatalogoItems(data)).catch(err => console.error(err));
     
     // Asignar número base una vez abierto el modal
     const hoy = new Date().toISOString().split('T')[0];
@@ -262,8 +260,8 @@ export default function CotizacionForm({ onClose, onSave }) {
           
           <form id="cotizacion-form" onSubmit={handleSave}>
             {/* Cabecera */}
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
-              <div className="form-group" style={{ width: '200px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div className="form-group" style={{ width: '140px', flexShrink: 0 }}>
                 <label className="form-label">N° Cotización</label>
                 <input 
                   type="text" 
@@ -289,7 +287,7 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div className="form-group" style={{ width: '220px', flexShrink: 0 }}>
                 <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
                 <div style={{ position: 'relative' }}>
@@ -431,26 +429,6 @@ export default function CotizacionForm({ onClose, onSave }) {
                             value={item.descripcion}
                             onChange={(e) => handleItemChange(index, 'descripcion', e.target.value)}
                           />
-                          {catalogoItems.length > 0 && (
-                            <select 
-                              className="form-control" 
-                              style={{ width: '40px', padding: '0 4px' }}
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  const baseItem = catalogoItems.find(i => i.id === Number(e.target.value));
-                                  if (baseItem) {
-                                    handleItemChange(index, 'descripcion', baseItem.nombre);
-                                    handleItemChange(index, 'precio_unitario', baseItem.precio_unitario);
-                                  }
-                                }
-                              }}
-                            >
-                              <option value=""></option>
-                              {catalogoItems.map(i => (
-                                <option key={i.id} value={i.id}>{i.nombre}</option>
-                              ))}
-                            </select>
-                          )}
                         </div>
                       </td>
                       <td style={{ padding: '0.5rem' }}>

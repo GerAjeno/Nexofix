@@ -30,24 +30,6 @@ router.post('/textos', (req, res) => {
   });
 });
 
-// GET catálogo de ítems
-router.get('/items', (req, res) => {
-  db.all('SELECT * FROM catalogo_items WHERE activo = 1', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-// POST nuevo ítem al catálogo
-router.post('/items', (req, res) => {
-  const { nombre, precio_unitario } = req.body;
-  const sql = 'INSERT INTO catalogo_items (nombre, precio_unitario) VALUES (?, ?)';
-  db.run(sql, [nombre, precio_unitario], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: this.lastID });
-  });
-});
-
 // --- Plantillas de Itemizados Completos ---
 
 // POST nueva plantilla de itemizado (con sus detalles)

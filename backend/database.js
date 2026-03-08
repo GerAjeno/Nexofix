@@ -82,16 +82,6 @@ function initDb() {
       )
     `);
 
-    // Tabla de Catálogo de Ítems Frecuentes
-    db.run(`
-      CREATE TABLE IF NOT EXISTS catalogo_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        precio_unitario INTEGER,
-        activo INTEGER DEFAULT 1
-      )
-    `);
-
     // Tabla de Tickets / Trabajos
     db.run(`
       CREATE TABLE IF NOT EXISTS tickets (

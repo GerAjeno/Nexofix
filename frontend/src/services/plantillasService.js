@@ -32,15 +32,5 @@ export const plantillasService = {
   getItemizadoDetails: async (id) => {
     const response = await axios.get(`${API_URL}/itemizados/${id}`);
     return response.data;
-  },
-
-  getItems: async () => {
-    const response = await axios.get(`${API_URL}/items`);
-    return response.data;
-  },
-
-  createItem: async (data) => {
-    const response = await axios.post(`${API_URL}/items`, data);
-    return response.data;
   }
 };
