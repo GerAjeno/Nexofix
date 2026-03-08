@@ -25,7 +25,8 @@ export default function CotizacionForm({ onClose, onSave }) {
     validez: '15 días corridos',
     proyecto: '',
     descripcion_trabajo: '',
-    condiciones_notas: 'La forma de pago es adelantando el 50% al cerrar el trato y el otro 50% al terminar el trabajo. Los equipos y trabajo tienen una garantia legal de 1 año desde su instalacion'
+    condiciones_notas: 'La forma de pago es adelantando el 50% al cerrar el trato y el otro 50% al terminar el trabajo. Los equipos y trabajo tienen una garantia legal de 1 año desde su instalacion',
+    tipo_impuesto: 'Sin Impuesto'
   });
 
   const [items, setItems] = useState([
@@ -36,6 +37,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     subtotal: 0,
     descuento_porcentaje: 0,
     descuento_monto: 0,
+    monto_impuesto: 0,
     total_final: 0
   });
 
@@ -74,15 +76,27 @@ export default function CotizacionForm({ onClose, onSave }) {
     // Para evitar loops infinitos, esto se maneja con cuidado, pero calcular y sobreescribir totales es seguro así:
     const descPorcentaje = Number(totales.descuento_porcentaje) || 0;
     const descMonto = Math.round(sub * (descPorcentaje / 100));
-    const final = sub - descMonto;
+    const montoNeto = sub - descMonto;
+    
+    // Cálculo de Impuesto
+    let impuesto = 0;
+    if (formData.tipo_impuesto === 'Factura (IVA 19%)') {
+      impuesto = Math.round(montoNeto * 0.19);
+    } else if (formData.tipo_impuesto === 'Boleta (Honorarios 15.25%)') {
+      impuesto = Math.round(montoNeto * 0.1525);
+    }
+
+    const final = montoNeto + impuesto;
 
     setTotales(prev => ({
       ...prev,
-      subtotal: sub,
-      descuento_monto: descMonto,
-      total_final: final
+      subtotal: sub, // Use the newly calculated 'sub'
+      descuento_porcentaje: prev.descuento_porcentaje, // Preserve the input percentage
+      descuento_monto: descMonto, // Use the newly calculated 'descMonto'
+      monto_impuesto: impuesto, // Use the newly calculated 'impuesto'
+      total_final: final // Use the newly calculated 'final'
     }));
-  }, [items, totales.descuento_porcentaje]); // Recalcular solo en base a estas dependencias
+  }, [items, totales.descuento_porcentaje, formData.tipo_impuesto]); // Recalcular solo en base a estas dependencias
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
@@ -325,16 +339,30 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
             </div>
 
-            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-              <label className="form-label">Proyecto (*)</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Ej: Mantenimiento anual cámaras"
-                value={formData.proyecto}
-                onChange={e => setFormData({...formData, proyecto: e.target.value})}
-                required
-              />
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div className="form-group" style={{ flex: 2, minWidth: '250px' }}>
+                <label className="form-label">Proyecto (*)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Ej: Mantenimiento anual cámaras"
+                  value={formData.proyecto}
+                  onChange={e => setFormData({...formData, proyecto: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group" style={{ flex: 1, minWidth: '200px' }}>
+                <label className="form-label">Tipo de Impuesto</label>
+                <select 
+                  className="form-control" 
+                  value={formData.tipo_impuesto}
+                  onChange={e => setFormData({...formData, tipo_impuesto: e.target.value})}
+                >
+                  <option value="Sin Impuesto">Sin Impuesto</option>
+                  <option value="Factura (IVA 19%)">Factura (IVA 19%)</option>
+                  <option value="Boleta (Honorarios 15.25%)">Boleta (Honorarios 15.25%)</option>
+                </select>
+              </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -494,6 +522,12 @@ export default function CotizacionForm({ onClose, onSave }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--warning)' }}>
                     <span>Monto Descontado:</span>
                     <span>- ${totales.descuento_monto.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
+                {totales.monto_impuesto > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                    <span>{formData.tipo_impuesto.split(' ')[0]}:</span>
+                    <span>+ ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', fontSize: '1.25rem' }}>

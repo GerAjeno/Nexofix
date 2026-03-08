@@ -43,7 +43,7 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   const { 
     cliente_id, fecha_emision, validez, proyecto, descripcion_trabajo, 
-    subtotal, descuento_porcentaje, descuento_monto, total_final, 
+    subtotal, descuento_porcentaje, descuento_monto, tipo_impuesto, monto_impuesto, total_final, 
     condiciones_notas, items 
   } = req.body;
 
@@ -57,14 +57,14 @@ router.post('/', (req, res) => {
       INSERT INTO cotizaciones (
         numero_cotizacion, cliente_id, fecha_emision, validez, proyecto, 
         descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto, 
-        total_final, condiciones_notas, activo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        tipo_impuesto, monto_impuesto, total_final, condiciones_notas, activo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `;
 
     const params = [
       numero_cotizacion, cliente_id, fecha_emision, validez, proyecto,
       descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto,
-      total_final, condiciones_notas
+      tipo_impuesto, monto_impuesto, total_final, condiciones_notas
     ];
 
     db.run(sqlInsertCotizacion, params, function(err) {

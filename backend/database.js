@@ -49,6 +49,8 @@ function initDb() {
         subtotal INTEGER,
         descuento_porcentaje INTEGER,
         descuento_monto INTEGER,
+        tipo_impuesto TEXT, -- 'Factura', 'Boleta', 'Sin Impuesto'
+        monto_impuesto INTEGER,
         total_final INTEGER,
         condiciones_notas TEXT,
         activo INTEGER DEFAULT 1,

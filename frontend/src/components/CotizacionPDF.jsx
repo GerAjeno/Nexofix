@@ -144,6 +144,12 @@ export default function CotizacionPDF({ data, onClose }) {
                       <span>- {formatearDinero(data.descuento_monto)}</span>
                     </div>
                   )}
+                  {data.monto_impuesto > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#0284c7' }}>
+                      <span>{data.tipo_impuesto?.split(' ')[0] || 'Impuesto'}:</span>
+                      <span>+ {formatearDinero(data.monto_impuesto)}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderTop: '2px solid #e5e7eb', marginTop: '10px', fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
                     <span>Total Final :</span>
                     <span>{formatearDinero(data.total_final)}</span>
