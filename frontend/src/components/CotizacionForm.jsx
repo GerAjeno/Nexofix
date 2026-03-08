@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Save, FileSpreadsheet } from 'lucide-react';
 import { clientesService } from '../services/api';
 import { cotizacionesService } from '../services/cotizacionesService';
 import { plantillasService } from '../services/plantillasService';
@@ -8,6 +8,7 @@ export default function CotizacionForm({ onClose, onSave }) {
   const [clientes, setClientes] = useState([]);
   const [plantillasDesc, setPlantillasDesc] = useState([]);
   const [plantillasCond, setPlantillasCond] = useState([]);
+  const [plantillasItems, setPlantillasItems] = useState([]);
   const [catalogoItems, setCatalogoItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -43,6 +44,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     clientesService.getAll().then(data => setClientes(data)).catch(err => console.error(err));
     plantillasService.getTextos('descripcion').then(data => setPlantillasDesc(data)).catch(err => console.error(err));
     plantillasService.getTextos('condiciones').then(data => setPlantillasCond(data)).catch(err => console.error(err));
+    plantillasService.getItemizadosPresets().then(data => setPlantillasItems(data)).catch(err => console.error(err));
     plantillasService.getItems().then(data => setCatalogoItems(data)).catch(err => console.error(err));
     
     // Asignar número base una vez abierto el modal
@@ -153,24 +155,41 @@ export default function CotizacionForm({ onClose, onSave }) {
     }
   };
 
-  const handleSaveItemToCatalog = async (item) => {
-    if (!item.descripcion.trim()) {
-      alert('La descripción del ítem no puede estar vacía');
+  const handleSaveItemizedPreset = async () => {
+    const itemsValidos = items.filter(it => it.descripcion.trim() !== '');
+    if (itemsValidos.length === 0) {
+      alert('Añade al menos un ítem válido para guardar la plantilla');
       return;
     }
 
+    const nombre = prompt('Ingrese un nombre para esta plantilla de itemizado completo:');
+    if (!nombre) return;
+
     try {
-      await plantillasService.createItem({ 
-        nombre: item.descripcion, 
-        precio_unitario: Number(item.precio_unitario) 
-      });
-      alert('Ítem añadido al catálogo');
-      // Recargar catálogo
-      const data = await plantillasService.getItems();
-      setCatalogoItems(data);
+      await plantillasService.createItemizadoPreset(nombre, itemsValidos);
+      alert('Plantilla de itemizado guardada con éxito');
+      const data = await plantillasService.getItemizadosPresets();
+      setPlantillasItems(data);
     } catch (err) {
       console.error(err);
-      alert('Error al añadir al catálogo');
+      alert('Error al guardar la plantilla de itemizado');
+    }
+  };
+
+  const loadItemizedPreset = async (presetId) => {
+    if (!presetId) return;
+    try {
+      const details = await plantillasService.getItemizadoDetails(presetId);
+      const newItems = details.map(d => ({
+        descripcion: d.descripcion,
+        cantidad: d.cantidad,
+        precio_unitario: d.precio_unitario,
+        total: d.cantidad * d.precio_unitario
+      }));
+      setItems(newItems);
+    } catch (err) {
+      console.error(err);
+      alert('Error al cargar la plantilla de itemizado');
     }
   };
 
@@ -214,7 +233,7 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input 
                     type="date" 
                     className="form-control" 
@@ -222,9 +241,18 @@ export default function CotizacionForm({ onClose, onSave }) {
                     onChange={e => setFormData({...formData, fecha_emision: e.target.value})}
                     required
                   />
-                  <span style={{ color: 'var(--primary)', fontWeight: 'bold', minWidth: '100px' }}>
-                    {new Date(formData.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL')}
-                  </span>
+                  <div style={{ 
+                    padding: '8px 12px', 
+                    backgroundColor: 'var(--sidebar-hover)', 
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    color: 'var(--primary)',
+                    minWidth: '120px',
+                    textAlign: 'center',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    {formData.fecha_emision ? new Date(formData.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL') : '--/--/----'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,7 +286,7 @@ export default function CotizacionForm({ onClose, onSave }) {
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Descripción del Trabajo</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   {plantillasDesc.length > 0 && (
                     <select 
                       className="form-control" 
@@ -277,11 +305,12 @@ export default function CotizacionForm({ onClose, onSave }) {
                   )}
                   <button 
                     type="button" 
-                    className="btn-secondary" 
-                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    className="icon-btn" 
+                    title="Guardar como plantilla"
                     onClick={() => handleSaveTextTemplate('descripcion')}
+                    style={{ color: 'var(--primary)' }}
                   >
-                    Guardar como plantilla
+                    <Save size={18} />
                   </button>
                 </div>
               </div>
@@ -297,7 +326,32 @@ export default function CotizacionForm({ onClose, onSave }) {
             <hr style={{ borderColor: 'var(--border-color)', margin: '2rem 0' }} />
 
             {/* Ítems */}
-            <h4 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Itemizado</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ margin: 0, color: 'var(--primary)' }}>Itemizado</h4>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {plantillasItems.length > 0 && (
+                  <select 
+                    className="form-control" 
+                    style={{ width: '180px', padding: '4px 8px', fontSize: '12px' }}
+                    onChange={(e) => loadItemizedPreset(e.target.value)}
+                  >
+                    <option value="">Cargar grupo de ítems...</option>
+                    {plantillasItems.map(p => (
+                      <option key={p.id} value={p.id}>{p.nombre}</option>
+                    ))}
+                  </select>
+                )}
+                <button 
+                  type="button" 
+                  className="icon-btn" 
+                  title="Guardar itemizado completo como plantilla"
+                  onClick={handleSaveItemizedPreset}
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <FileSpreadsheet size={20} />
+                </button>
+              </div>
+            </div>
             <div className="table-container" style={{ marginBottom: '1rem' }}>
               <table className="data-table" style={{ minWidth: '600px' }}>
                 <thead>
@@ -365,26 +419,15 @@ export default function CotizacionForm({ onClose, onSave }) {
                         ${(item.cantidad * item.precio_unitario).toLocaleString('es-CL')}
                       </td>
                       <td style={{ padding: '0.5rem', verticalAlign: 'middle', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                          <button 
-                            type="button"
-                            className="icon-btn"
-                            onClick={() => handleSaveItemToCatalog(item)}
-                            title="Añadir al catálogo"
-                            style={{ color: 'var(--primary)', padding: '5px' }}
-                          >
-                            <Plus size={16} />
-                          </button>
-                          <button 
-                            type="button"
-                            className="btn-close"
-                            onClick={() => removeItem(index)}
-                            title="Eliminar ítem"
-                            style={{ padding: '5px' }}
-                          >
-                            <Trash2 size={16} color="var(--warning)" />
-                          </button>
-                        </div>
+                        <button 
+                          type="button"
+                          className="btn-close"
+                          onClick={() => removeItem(index)}
+                          title="Eliminar ítem"
+                          style={{ padding: '4px' }}
+                        >
+                          <Trash2 size={16} color="var(--warning)" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -429,7 +472,7 @@ export default function CotizacionForm({ onClose, onSave }) {
             <div className="form-group" style={{ marginTop: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Condiciones y Notas</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   {plantillasCond.length > 0 && (
                     <select 
                       className="form-control" 
@@ -448,11 +491,12 @@ export default function CotizacionForm({ onClose, onSave }) {
                   )}
                   <button 
                     type="button" 
-                    className="btn-secondary" 
-                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    className="icon-btn" 
+                    title="Guardar como plantilla"
                     onClick={() => handleSaveTextTemplate('condiciones')}
+                    style={{ color: 'var(--primary)' }}
                   >
-                    Guardar como plantilla
+                    <Save size={18} />
                   </button>
                 </div>
               </div>

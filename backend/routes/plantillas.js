@@ -48,4 +48,41 @@ router.post('/items', (req, res) => {
   });
 });
 
+// --- Plantillas de Itemizados Completos ---
+
+// POST nueva plantilla de itemizado (con sus detalles)
+router.post('/itemizados', (req, res) => {
+  const { nombre, items } = req.body;
+  
+  db.run('INSERT INTO plantillas_itemizados (nombre) VALUES (?)', [nombre], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    const plantillaId = this.lastID;
+    const stmt = db.prepare('INSERT INTO plantillas_itemizados_detalles (plantilla_id, descripcion, cantidad, precio_unitario) VALUES (?, ?, ?, ?)');
+    
+    items.forEach(item => {
+      stmt.run(plantillaId, item.descripcion, item.cantidad, item.precio_unitario);
+    });
+    
+    stmt.finalize();
+    res.json({ id: plantillaId, message: 'Plantilla de itemizado guardada' });
+  });
+});
+
+// GET todas las plantillas de itemizados
+router.get('/itemizados', (req, res) => {
+  db.all('SELECT * FROM plantillas_itemizados WHERE activo = 1', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+// GET detalles de una plantilla de itemizado
+router.get('/itemizados/:id', (req, res) => {
+  db.all('SELECT * FROM plantillas_itemizados_detalles WHERE plantilla_id = ?', [req.params.id], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 export default router;

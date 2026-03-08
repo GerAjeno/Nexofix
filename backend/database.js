@@ -110,6 +110,26 @@ function initDb() {
       )
     `);
     
+    // Tablas para Plantillas de Itemizados Completos
+    db.run(`
+      CREATE TABLE IF NOT EXISTS plantillas_itemizados (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT UNIQUE,
+        activo INTEGER DEFAULT 1
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS plantillas_itemizados_detalles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plantilla_id INTEGER,
+        descripcion TEXT,
+        cantidad REAL,
+        precio_unitario INTEGER,
+        FOREIGN KEY (plantilla_id) REFERENCES plantillas_itemizados (id) ON DELETE CASCADE
+      )
+    `);
+
     console.log('Database tables initialized.');
   });
 }
