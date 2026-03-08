@@ -290,7 +290,7 @@ export default function CotizacionForm({ onClose, onSave }) {
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
-              <div className="form-group" style={{ flex: 1 }}>
+              <div className="form-group" style={{ width: '220px', flexShrink: 0 }}>
                 <label className="form-label">Fecha de Emisión (DD/MM/AAAA) (*)</label>
                 <div style={{ position: 'relative' }}>
                   <input 
@@ -302,8 +302,8 @@ export default function CotizacionForm({ onClose, onSave }) {
                     maxLength="10"
                     required
                     style={{ 
-                      fontSize: '1.05rem', 
-                      letterSpacing: '1px', 
+                      fontSize: '1rem', 
+                      letterSpacing: '0.5px', 
                       fontWeight: '500', 
                       textAlign: 'center',
                       color: 'var(--primary)',
@@ -311,7 +311,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                     }}
                   />
                 </div>
-                <small style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Mascará automática: DD/MM/AAAA</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Mascará: DD/MM/AAAA</small>
               </div>
               <div className="form-group" style={{ width: '180px', flexShrink: 0 }}>
                 <label className="form-label">Validez</label>
