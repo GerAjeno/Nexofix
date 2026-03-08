@@ -16,25 +16,31 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
   
+  
   --radius-lg: 12px;
   --radius-full: 9999px;
   
   --success: #10b981;
   --warning: #f59e0b;
+  
+  --bg-gradient: radial-gradient(circle at top right, rgba(79, 172, 254, 0.03), transparent 40%),
+                 radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.03), transparent 40%);
 }
 
 [data-theme="dark"] {
-  /* PREMIUM DARK THEME VARIABLES */
+  /* AMOLED TRUE BLACK THEME VARIABLES */
   --primary: #00f2fe;
   --primary-hover: #4facfe;
-  --bg-color: #0b0f19;
-  --card-bg: #141b2d;
+  --bg-color: #000000;      /* AMOLED Black */
+  --card-bg: #0a0a0a;       /* Very dark gray for contrast */
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --border-color: rgba(255, 255, 255, 0.08);
-  --sidebar-bg: #0b0f19;
+  --sidebar-bg: #000000;    /* AMOLED Black */
   --sidebar-hover: rgba(255, 255, 255, 0.05);
   --modal-overlay: rgba(0,0,0,0.8);
+  
+  --bg-gradient: none; /* No gradient by default to save OLED */
   
   --shadow-sm: 0 4px 6px rgba(0,0,0,0.3);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
@@ -51,8 +57,7 @@ body {
   margin: 0;
   font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-color);
-  background-image: radial-gradient(circle at top right, rgba(79, 172, 254, 0.03), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.03), transparent 40%);
+  background-image: var(--bg-gradient);
   color: var(--text-main);
   line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -169,11 +174,7 @@ body {
   line-height: 1.5;
 }
 
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+/* Removed duplicate app-container */
 
 /* Removed old header styles */
 
