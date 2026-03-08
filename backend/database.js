@@ -36,7 +36,40 @@ function initDb() {
       )
     `);
 
-    // Agregar otras tablas aquí (Cotizaciones, Trabajos, etc.) más adelante
+    // Tabla de Cotizaciones
+    db.run(`
+      CREATE TABLE IF NOT EXISTS cotizaciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        numero_cotizacion TEXT UNIQUE,
+        cliente_id INTEGER,
+        fecha_emision DATE,
+        validez TEXT,
+        proyecto TEXT,
+        descripcion_trabajo TEXT,
+        subtotal INTEGER,
+        descuento_porcentaje INTEGER,
+        descuento_monto INTEGER,
+        total_final INTEGER,
+        condiciones_notas TEXT,
+        activo INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+      )
+    `);
+
+    // Tabla de Ítems de la Cotización
+    db.run(`
+      CREATE TABLE IF NOT EXISTS cotizacion_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cotizacion_id INTEGER,
+        descripcion TEXT,
+        cantidad INTEGER,
+        precio_unitario INTEGER,
+        total INTEGER,
+        FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones (id) ON DELETE CASCADE
+      )
+    `);
     
     console.log('Database tables initialized.');
   });

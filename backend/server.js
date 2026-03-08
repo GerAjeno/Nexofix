@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { db } from './database.js';
 import clientesRoutes from './routes/clientes.js';
+import cotizacionesRoutes from './routes/cotizaciones.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ const upload = multer({ storage });
 
 // Rutas de API
 app.use('/api/clientes', clientesRoutes);
+app.use('/api/cotizaciones', cotizacionesRoutes);
 
 // Endpoint de subida de archivos para notas especiales o imágenes
 app.post('/api/upload', upload.single('imagen'), (req, res) => {
