@@ -1,0 +1,104 @@
+import express from 'express';
+import { db } from '../database.js';
+
+const router = express.Router();
+
+// GET all clientes
+router.get('/', (req, res) => {
+  db.all('SELECT * FROM clientes ORDER BY id DESC', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// GET single cliente
+router.get('/:id', (req, res) => {
+  db.get('SELECT * FROM clientes WHERE id = ?', [req.params.id], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+    res.json(row);
+  });
+});
+
+// POST new cliente
+router.post('/', (req, res) => {
+  const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
+  
+  // Basic validation
+  if (!tipo || !rut || !nombre) {
+    return res.status(400).json({ error: 'tipo, rut, and nombre are required' });
+  }
+
+  const sql = `
+    INSERT INTO clientes (tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen];
+
+  db.run(sql, params, function(err) {
+    if (err) {
+      if (err.message.includes('UNIQUE constraint')) {
+        return res.status(409).json({ error: 'El RUT ya existe en el sistema' });
+      }
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ id: this.lastID, message: 'Cliente creado exitosamente' });
+  });
+});
+
+// PUT update cliente
+router.put('/:id', (req, res) => {
+  const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
+  
+  const sql = `
+    UPDATE clientes 
+    SET tipo = COALESCE(?, tipo),
+        rut = COALESCE(?, rut),
+        nombre = COALESCE(?, nombre),
+        representante = COALESCE(?, representante),
+        telefono = COALESCE(?, telefono),
+        email = COALESCE(?, email),
+        direccion = COALESCE(?, direccion),
+        giro = COALESCE(?, giro),
+        notas_texto = COALESCE(?, notas_texto),
+        notas_imagen = COALESCE(?, notas_imagen),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `;
+  
+  const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, req.params.id];
+
+  db.run(sql, params, function(err) {
+    if (err) {
+      if (err.message.includes('UNIQUE constraint')) {
+        return res.status(409).json({ error: 'El RUT ya existe en el sistema' });
+      }
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+    res.json({ message: 'Cliente actualizado exitosamente' });
+  });
+});
+
+// DELETE cliente
+router.delete('/:id', (req, res) => {
+  db.run('DELETE FROM clientes WHERE id = ?', [req.params.id], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+    res.json({ message: 'Cliente eliminado exitosamente' });
+  });
+});
+
+export default router;
