@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { clientesService } from '../services/api';
+import ClienteForm from '../components/ClienteForm';
 
 export default function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     loadClientes();
@@ -22,11 +24,21 @@ export default function Clientes() {
     }
   };
 
+  const handleSaveCliente = async (clienteData) => {
+    try {
+      await clientesService.create(clienteData);
+      setShowModal(false);
+      loadClientes(); // Reload the list
+    } catch (err) {
+      throw err; // Form will catch and show error
+    }
+  };
+
   return (
     <div>
       <div className="flex-between">
         <h2 className="page-title">Gestión de Clientes</h2>
-        <button className="btn-primary">
+        <button className="btn-primary" onClick={() => setShowModal(true)}>
           + Nuevo Cliente
         </button>
       </div>
@@ -77,6 +89,13 @@ export default function Clientes() {
           </tbody>
         </table>
       </div>
+
+      {showModal && (
+        <ClienteForm 
+          onClose={() => setShowModal(false)} 
+          onSave={handleSaveCliente} 
+        />
+      )}
     </div>
   );
 }

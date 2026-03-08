@@ -1,0 +1,4 @@
+[08-03-2026 16:56:18] USER: Varias correcciones
+1.- Los Modulos de clientes, Cotizaciones, Ticket, Agenda, Cobranza deben ir en un SideBar al lado izquerdo.
+2.- Por defecto la aplicacion debe estar en Modo Oscuro, poniendo un Icono a la izquerda arriba para cambiar al modo claro.
+3.- Al pinchar el Boton de Nuevo Cliente, no aparece nada.

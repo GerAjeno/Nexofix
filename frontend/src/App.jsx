@@ -1,31 +1,40 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 
 function App() {
+  // Use dark mode by default
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <Router>
       <div className="app-container">
-        <header className="header">
-          <div className="header-content">
-            <h1 className="logo">NexoFix</h1>
-            <nav>
-              <ul className="nav-links">
-                <li><a href="/">Dashboard</a></li>
-                <li><a href="/clientes">Clientes</a></li>
-                {/* <li><a href="/cotizaciones">Cotizaciones</a></li> */}
-              </ul>
-            </nav>
-          </div>
-        </header>
+        <Sidebar theme={theme} toggleTheme={toggleTheme} />
 
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/clientes" element={<Clientes />} />
-            {/* Add other routes here later */}
-          </Routes>
-        </main>
+        <div className="main-layout">
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/clientes" element={<Clientes />} />
+              {/* Add other routes here later */}
+              <Route path="/cotizaciones" element={<div className="card"><h2 className="page-title">Cotizaciones</h2><p className="page-subtitle">Módulo en construcción</p></div>} />
+              <Route path="/tickets" element={<div className="card"><h2 className="page-title">Tickets</h2><p className="page-subtitle">Módulo en construcción</p></div>} />
+              <Route path="/agenda" element={<div className="card"><h2 className="page-title">Agenda</h2><p className="page-subtitle">Módulo en construcción</p></div>} />
+              <Route path="/cobranza" element={<div className="card"><h2 className="page-title">Cobranza</h2><p className="page-subtitle">Módulo en construcción</p></div>} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </Router>
   );
