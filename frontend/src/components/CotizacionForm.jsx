@@ -22,6 +22,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     numero_cotizacion: '',
     cliente_id: '',
     fecha_emision: new Date().toISOString().split('T')[0],
+    fecha_emision_formateada: new Date().toLocaleDateString('es-CL'),
     validez: '15 días corridos',
     proyecto: '',
     descripcion_trabajo: '',
@@ -290,17 +291,6 @@ export default function CotizacionForm({ onClose, onSave }) {
                       borderColor: (formData.fecha_emision_formateada?.length === 10) ? 'var(--primary)' : 'var(--border-color)'
                     }}
                   />
-                  {formData.fecha_emision_formateada?.length === 10 && (
-                    <div style={{ 
-                      position: 'absolute', 
-                      right: '10px', 
-                      top: '50%', 
-                      transform: 'translateY(-50%)',
-                      color: 'var(--primary)' 
-                    }}>
-                      <Save size={16} />
-                    </div>
-                  )}
                 </div>
                 <small style={{ color: '#64748b' }}>Escriba los números seguido.</small>
               </div>
