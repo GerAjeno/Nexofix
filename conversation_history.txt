@@ -143,3 +143,24 @@ Abre de nuevo tu web local ([http://localhost:5173](http://localhost:5173)) y ve
 [08-03-2026 18:17:00] USER: Ocurrió un error en Vite: "Failed to resolve import ../services/clientesService" desde CotizacionForm.jsx.
 
 [08-03-2026 18:18:00] ASSISTANT: ¡Corregido al instante! Había un error de tipeo en la ruta del archivo de servicios al intentar importar el listado de clientes para el menú desplegable. Ya está arreglado y Vite debió recargar la página automáticamente.
+
+[08-03-2026 18:25:00] USER: Me gusta, vamos a añadir cosas al crear la cotizacion. 1.- La validez po un listado para elegir entre 15, 30 y 60 dias. 2.- Proyecto no debe ser Opcional, debe ser obligatorio. 3.- Debe aparecer el numero de Cotizacion, este Numero debe empezar por COT- seguido del Numero, y este numero no debe ser Consecutivo tal como aparece en la imagen. 4.- Cambia la frase que dice Items de Cobro por Itemizado.
+
+[08-03-2026 18:30:00] ASSISTANT: Ajustes aplicados. Ahora el formulario genera un número `COT-XXXXXX` aleatorio visible, el campo Proyecto es obligatorio, la Validez se elige de una lista desplegable y la sección se llama "Itemizado". Todo sincronizado en GitHub.
+
+[08-03-2026 18:39:00] USER: sigue
+
+[08-03-2026 18:44:00] USER: Antes de seguir hay otras modificaciones. 1.- Formato de Fecha DD/MM/AAAA. 2.- Quiero poder guardar Tipos de Descripcion, Itemizados y Condiciones para hacer la cotizacion mas rapida.
+
+[08-03-2026 18:48:00] ASSISTANT: Sistema de Plantillas y Regionalización implementado. Ahora puedes guardar y cargar textos frecuentes para descripciones y condiciones, y seleccionar ítems del catálogo para autocompletar el presupuesto. También estandaricé todas las fechas al formato chileno.
+
+[08-03-2026 18:50:00] USER: el Implementation Plan esta la mitad en ingles y el resto en español, ponlo en español por favor.
+
+[08-03-2026 18:55:00] ASSISTANT: Plan de implementación traducido íntegramente al español para mantener la consistencia del proyecto.
+
+[08-03-2026 19:20:00] ASSISTANT: Módulo de Trabajos (Tickets) finalizado. Se creó el sistema de órdenes de servicio con estados, prioridades y vinculación a clientes/cotizaciones. Ya está disponible en el menú lateral.
+
+[08-03-2026 19:22:00] USER: Revisa que sucede, ya que al abrir aparece la pagina en blanco.
+
+[08-03-2026 19:24:00] ASSISTANT: ¡Corregido! Fue un error de importación accidental en el Sidebar al cambiar el ícono de Tickets. Se restauró `react-router-dom` y la app ya carga con normalidad.
+
