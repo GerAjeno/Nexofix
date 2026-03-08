@@ -2,13 +2,23 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { clientesService } from '../services/api';
 import { cotizacionesService } from '../services/cotizacionesService';
+import { plantillasService } from '../services/plantillasService';
 
 export default function CotizacionForm({ onClose, onSave }) {
   const [clientes, setClientes] = useState([]);
+  const [plantillasDesc, setPlantillasDesc] = useState([]);
+  const [plantillasCond, setPlantillasCond] = useState([]);
+  const [catalogoItems, setCatalogoItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  // Generar número no consecutivo de 6 dígitos
+  const generarNumeroCotizacion = () => {
+    return `COT-${Math.floor(100000 + Math.random() * 900000)}`;
+  };
+
   const [formData, setFormData] = useState({
+    numero_cotizacion: '',
     cliente_id: '',
     fecha_emision: new Date().toISOString().split('T')[0],
     validez: '15 días corridos',
@@ -29,8 +39,14 @@ export default function CotizacionForm({ onClose, onSave }) {
   });
 
   useEffect(() => {
-    // Cargar clientes para el selector
+    // Cargar datos iniciales
     clientesService.getAll().then(data => setClientes(data)).catch(err => console.error(err));
+    plantillasService.getTextos('descripcion').then(data => setPlantillasDesc(data)).catch(err => console.error(err));
+    plantillasService.getTextos('condiciones').then(data => setPlantillasCond(data)).catch(err => console.error(err));
+    plantillasService.getItems().then(data => setCatalogoItems(data)).catch(err => console.error(err));
+    
+    // Asignar número base una vez abierto el modal
+    setFormData(prev => ({ ...prev, numero_cotizacion: generarNumeroCotizacion() }));
   }, []);
 
   // Calcular totales matemáticos en tiempo real cuando cambian los ítems o el descuento
@@ -125,6 +141,16 @@ export default function CotizacionForm({ onClose, onSave }) {
             {/* Cabecera */}
             <div className="dashboard-grid" style={{ marginBottom: '1.5rem' }}>
               <div className="form-group">
+                <label className="form-label">N° Cotización</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={formData.numero_cotizacion}
+                  readOnly
+                  style={{ backgroundColor: 'var(--bg-color)', color: 'var(--primary)', fontWeight: 'bold' }}
+                />
+              </div>
+              <div className="form-group">
                 <label className="form-label">Cliente (*)</label>
                 <select 
                   className="form-control" 
@@ -145,33 +171,57 @@ export default function CotizacionForm({ onClose, onSave }) {
                   className="form-control" 
                   value={formData.fecha_emision}
                   onChange={e => setFormData({...formData, fecha_emision: e.target.value})}
+                  required
                 />
               </div>
+            </div>
+
+            <div className="dashboard-grid" style={{ marginBottom: '1.5rem' }}>
               <div className="form-group">
                 <label className="form-label">Validez</label>
+                <select 
+                  className="form-control" 
+                  value={formData.validez}
+                  onChange={e => setFormData({...formData, validez: e.target.value})}
+                >
+                  <option value="15 días corridos">15 días corridos</option>
+                  <option value="30 días corridos">30 días corridos</option>
+                  <option value="60 días corridos">60 días corridos</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <label className="form-label">Proyecto (*)</label>
                 <input 
                   type="text" 
                   className="form-control" 
-                  value={formData.validez}
-                  placeholder="Ej: 15 días corridos"
-                  onChange={e => setFormData({...formData, validez: e.target.value})}
+                  placeholder="Ej: Motor portón casa"
+                  value={formData.proyecto}
+                  onChange={e => setFormData({...formData, proyecto: e.target.value})}
+                  required
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Proyecto (Opcional)</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Ej: Motor portón casa"
-                value={formData.proyecto}
-                onChange={e => setFormData({...formData, proyecto: e.target.value})}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Descripción del Trabajo</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Descripción del Trabajo</label>
+                {plantillasDesc.length > 0 && (
+                  <select 
+                    className="form-control" 
+                    style={{ width: '200px', padding: '2px 8px', fontSize: '12px' }}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setFormData({...formData, descripcion_trabajo: e.target.value});
+                      }
+                    }}
+                  >
+                    <option value="">Cargar plantilla...</option>
+                    {plantillasDesc.map(p => (
+                      <option key={p.id} value={p.contenido}>{p.nombre}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <textarea 
                 className="form-control" 
                 rows="2"
@@ -184,7 +234,7 @@ export default function CotizacionForm({ onClose, onSave }) {
             <hr style={{ borderColor: 'var(--border-color)', margin: '2rem 0' }} />
 
             {/* Ítems */}
-            <h4 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Ítems de Cobro</h4>
+            <h4 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Itemizado</h4>
             <div className="table-container" style={{ marginBottom: '1rem' }}>
               <table className="data-table" style={{ minWidth: '600px' }}>
                 <thead>
@@ -200,13 +250,35 @@ export default function CotizacionForm({ onClose, onSave }) {
                   {items.map((item, index) => (
                     <tr key={index}>
                       <td style={{ padding: '0.5rem' }}>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="Descripción del material o servicio..."
-                          value={item.descripcion}
-                          onChange={(e) => handleItemChange(index, 'descripcion', e.target.value)}
-                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            placeholder="Descripción..."
+                            value={item.descripcion}
+                            onChange={(e) => handleItemChange(index, 'descripcion', e.target.value)}
+                          />
+                          {catalogoItems.length > 0 && (
+                            <select 
+                              className="form-control" 
+                              style={{ width: '40px', padding: '0 4px' }}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  const baseItem = catalogoItems.find(i => i.id === Number(e.target.value));
+                                  if (baseItem) {
+                                    handleItemChange(index, 'descripcion', baseItem.nombre);
+                                    handleItemChange(index, 'precio_unitario', baseItem.precio_unitario);
+                                  }
+                                }
+                              }}
+                            >
+                              <option value=""></option>
+                              {catalogoItems.map(i => (
+                                <option key={i.id} value={i.id}>{i.nombre}</option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
                       </td>
                       <td style={{ padding: '0.5rem' }}>
                         <input 
@@ -280,7 +352,25 @@ export default function CotizacionForm({ onClose, onSave }) {
             </div>
 
             <div className="form-group" style={{ marginTop: '2rem' }}>
-              <label className="form-label">Condiciones y Notas</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Condiciones y Notas</label>
+                {plantillasCond.length > 0 && (
+                  <select 
+                    className="form-control" 
+                    style={{ width: '200px', padding: '2px 8px', fontSize: '12px' }}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setFormData({...formData, condiciones_notas: e.target.value});
+                      }
+                    }}
+                  >
+                    <option value="">Cargar plantilla...</option>
+                    {plantillasCond.map(p => (
+                      <option key={p.id} value={p.contenido}>{p.nombre}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <textarea 
                 className="form-control" 
                 rows="3"

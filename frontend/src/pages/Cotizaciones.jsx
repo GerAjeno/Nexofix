@@ -71,8 +71,8 @@ export default function Cotizaciones() {
           <tbody>
             {cotizaciones.map(cot => (
               <tr key={cot.id}>
-                <td><strong>{cot.numero_cotizacion}</strong></td>
-                <td>{new Date(cot.fecha_emision + 'T00:00:00').toLocaleDateString('es-CL')}</td>
+                <td>{cot.numero_cotizacion}</td>
+                <td>{new Date(cot.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL')}</td>
                 <td>{cot.cliente_nombre || 'Cliente Desconocido'}</td>
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
                 <td style={{textAlign: 'right'}}>

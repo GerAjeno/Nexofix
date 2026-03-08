@@ -70,6 +70,27 @@ function initDb() {
         FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones (id) ON DELETE CASCADE
       )
     `);
+
+    // Tabla de Plantillas de Textos (Descripciones, Condiciones)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS plantillas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT, -- 'descripcion' o 'condiciones'
+        nombre TEXT,
+        contenido TEXT,
+        activo INTEGER DEFAULT 1
+      )
+    `);
+
+    // Tabla de Catálogo de Ítems Frecuentes
+    db.run(`
+      CREATE TABLE IF NOT EXISTS catalogo_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        precio_unitario INTEGER,
+        activo INTEGER DEFAULT 1
+      )
+    `);
     
     console.log('Database tables initialized.');
   });
