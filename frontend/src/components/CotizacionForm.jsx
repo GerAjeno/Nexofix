@@ -262,8 +262,8 @@ export default function CotizacionForm({ onClose, onSave }) {
           
           <form id="cotizacion-form" onSubmit={handleSave}>
             {/* Cabecera */}
-            <div className="dashboard-grid" style={{ marginBottom: '1rem' }}>
-              <div className="form-group">
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
+              <div className="form-group" style={{ width: '200px', flexShrink: 0 }}>
                 <label className="form-label">N° Cotización</label>
                 <input 
                   type="text" 
@@ -273,7 +273,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                   style={{ backgroundColor: 'var(--bg-color)', color: 'var(--primary)', fontWeight: 'bold' }}
                 />
               </div>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Cliente (*)</label>
                 <select 
                   className="form-control" 
@@ -289,8 +289,8 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
             </div>
 
-            <div className="dashboard-grid" style={{ marginBottom: '1rem' }}>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Fecha de Emisión (DD/MM/AAAA) (*)</label>
                 <div style={{ position: 'relative' }}>
                   <input 
@@ -302,7 +302,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                     maxLength="10"
                     required
                     style={{ 
-                      fontSize: '1.1rem', 
+                      fontSize: '1.05rem', 
                       letterSpacing: '1px', 
                       fontWeight: '500', 
                       textAlign: 'center',
@@ -311,9 +311,9 @@ export default function CotizacionForm({ onClose, onSave }) {
                     }}
                   />
                 </div>
-                <small style={{ color: '#64748b' }}>Escriba los números seguido.</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Mascará automática: DD/MM/AAAA</small>
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ width: '180px', flexShrink: 0 }}>
                 <label className="form-label">Validez</label>
                 <select 
                   className="form-control" 
@@ -332,7 +332,7 @@ export default function CotizacionForm({ onClose, onSave }) {
               <input 
                 type="text" 
                 className="form-control" 
-                placeholder="Ej: Motor portón casa"
+                placeholder="Ej: Mantenimiento anual cámaras"
                 value={formData.proyecto}
                 onChange={e => setFormData({...formData, proyecto: e.target.value})}
                 required
