@@ -66,3 +66,27 @@ Abre ese enlace en tu navegador. Deberías ver:
 2. La página de **Clientes** (arriba a la derecha puedes navegar) conectada dinámicamente al backend local `SQLite`.
 
 Pruébalo libremente, intenta cliquear botones o ver la tabla. Cuando estés conforme de que el entorno y la estructura se ven alineados con tus expectativas, avísame y seguimos con Cotizaciones, o dime si quieres cambiar algún color o letra.
+
+[08-03-2026 16:56:18] USER: Varias correcciones
+1.- Los Modulos de clientes, Cotizaciones, Ticket, Agenda, Cobranza deben ir en un SideBar al lado izquerdo.
+2.- Por defecto la aplicacion debe estar en Modo Oscuro, poniendo un Icono a la izquerda arriba para cambiar al modo claro.
+3.- Al pinchar el Boton de Nuevo Cliente, no aparece nada.
+
+[08-03-2026 16:58:30] ASSISTANT: He aplicado inmediatamente tus tres observaciones:
+
+1. **Sidebar Izquierdo**: Reestructuré la maquetación principal. Ahora hay un menú lateral estático a la izquierda con íconos bonitos (usando `lucide-react`) para todas las secciones.
+2. **Modo Oscuro por defecto**: Invertí la configuración global de CSS. Ahora el modo oscuro es el nativo y por defecto. Además, añadí un botón con iconos de Sol/Luna en la parte superior izquierda del Sidebar para alternar dinámicamente y guardar la preferencia.
+3. **Botón Nuevo Cliente**: Creé el modal (formulario emergente) de `ClienteForm.jsx`. Al pinchar "Nuevo Cliente", se abre con todos los campos (Nombre, Tipo, RUT, Dirección, Giro, etc.) y las validaciones correspondientes conectadas para guardar directo en la base de datos local SQLite.
+
+Dado que dejé los servidores ejecutándose, si vuelves a tu navegador y recargas **[http://localhost:5173](http://localhost:5173)** los cambios ya deberían estar aplicados. (He hecho un `git push` de esto también).
+
+Pruébalos y me dices si avanzamos a las **Cotizaciones**, o si hay otro detalle visual que ajustar.
+
+[08-03-2026 17:01:02] USER: Mira como se ve. crees que hay algo mal?
+
+[08-03-2026 17:03:15] ASSISTANT: Toda la razón. Al ver tu pantallazo, noté que el **Modo Oscuro** que teníamos era demasiado sombrío, apagado, y las separaciones entre el Sidebar y el contenido principal eran casi invisibles, haciéndolo parecer un bloque gigante triste.
+He reescrito los colores base y los estilos de CSS para darle un look "Premium" moderno:
+1. **Los colores base**: Cambié el fondo de azul plano a un tono 'navy' muy oscuro `#0b0f19` y las tarjetas a `#141b2d` para generar un contraste mucho más legible.
+2. **Cristal y Reflejos (Glassmorphism)**: Añadí brillos sutiles (radial gradients) al fondo general, y un degradado cyan fluorescente (`#00f2fe`) vibrante a algunos detalles, como el logo `NexoFix` de arriba, y a las opciones activas del Sidebar.
+3. **Hover Effects**: Los botones y tarjetas de métricas ahora se elevan y tienen sombras coloreadas muy agradables que invitan a interactuar.
+Si recargas la web (F5), verás un cambio radical en la nitidez y belleza de la interfaz, que ahora se ve espectacular. ¿Se ve mejor ahora?
