@@ -35,7 +35,6 @@ export default function CotizacionForm({ onClose, onSave }) {
 
   const [totales, setTotales] = useState({
     subtotal: 0,
-    descuento_porcentaje: 0,
     descuento_monto: 0,
     monto_impuesto: 0,
     total_final: 0
@@ -74,8 +73,8 @@ export default function CotizacionForm({ onClose, onSave }) {
 
     // Solo actualizamos el estado si detectamos un cambio en los totales de los ítems
     // Para evitar loops infinitos, esto se maneja con cuidado, pero calcular y sobreescribir totales es seguro así:
-    const descPorcentaje = Number(totales.descuento_porcentaje) || 0;
-    const descMonto = Math.round(sub * (descPorcentaje / 100));
+    // Cálculos de Totales
+    const descMonto = Number(totales.descuento_monto) || 0;
     const montoNeto = sub - descMonto;
     
     // Cálculo de Impuesto
@@ -90,13 +89,12 @@ export default function CotizacionForm({ onClose, onSave }) {
 
     setTotales(prev => ({
       ...prev,
-      subtotal: sub, // Use the newly calculated 'sub'
-      descuento_porcentaje: prev.descuento_porcentaje, // Preserve the input percentage
-      descuento_monto: descMonto, // Use the newly calculated 'descMonto'
-      monto_impuesto: impuesto, // Use the newly calculated 'impuesto'
-      total_final: final // Use the newly calculated 'final'
+      subtotal: sub,
+      descuento_monto: descMonto,
+      monto_impuesto: impuesto,
+      total_final: final
     }));
-  }, [items, totales.descuento_porcentaje, formData.tipo_impuesto]); // Recalcular solo en base a estas dependencias
+  }, [items, totales.descuento_monto, formData.tipo_impuesto]); // Recalcular solo en base a estas dependencias
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
@@ -508,22 +506,16 @@ export default function CotizacionForm({ onClose, onSave }) {
                   <strong>${totales.subtotal.toLocaleString('es-CL')}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
-                  <span>Descuento (%):</span>
+                  <span>Descuento ($):</span>
                   <input 
                     type="number" 
                     className="form-control" 
-                    style={{ width: '70px', padding: '0.25rem' }} 
-                    min="0" max="100"
-                    value={totales.descuento_porcentaje}
-                    onChange={(e) => setTotales({...totales, descuento_porcentaje: e.target.value})}
+                    style={{ width: '100px', padding: '0.25rem', textAlign: 'right' }} 
+                    min="0"
+                    value={totales.descuento_monto}
+                    onChange={(e) => setTotales({...totales, descuento_monto: e.target.value})}
                   />
                 </div>
-                {totales.descuento_monto > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--warning)' }}>
-                    <span>Monto Descontado:</span>
-                    <span>- ${totales.descuento_monto.toLocaleString('es-CL')}</span>
-                  </div>
-                )}
                 {totales.monto_impuesto > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--primary)' }}>
                     <span>{formData.tipo_impuesto.split(' ')[0]}:</span>

@@ -138,9 +138,9 @@ export default function CotizacionPDF({ data, onClose }) {
                     <span>Subtotal Servicios:</span>
                     <span>{formatearDinero(data.subtotal)}</span>
                   </div>
-                  {(data.descuento_porcentaje > 0 || data.descuento_monto > 0) && (
+                  {data.descuento_monto > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#059669' }}>
-                      <span>Descuento ({data.descuento_porcentaje || 0}%):</span>
+                      <span>Descuento Aplicado:</span>
                       <span>- {formatearDinero(data.descuento_monto)}</span>
                     </div>
                   )}
