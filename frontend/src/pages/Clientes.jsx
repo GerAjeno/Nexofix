@@ -7,6 +7,7 @@ export default function Clientes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState(null);
 
   useEffect(() => {
     loadClientes();
@@ -26,7 +27,11 @@ export default function Clientes() {
 
   const handleSaveCliente = async (clienteData) => {
     try {
-      await clientesService.create(clienteData);
+      if (selectedCliente) {
+        await clientesService.update(selectedCliente.id, clienteData);
+      } else {
+        await clientesService.create(clienteData);
+      }
       setShowModal(false);
       loadClientes(); // Reload the list
     } catch (err) {
@@ -34,11 +39,22 @@ export default function Clientes() {
     }
   };
 
+  const handleDeleteCliente = async (id, nombre) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar (archivar) al cliente "${nombre}"? Esta acción se puede revertir luego contactando soporte.`)) {
+      try {
+        await clientesService.delete(id);
+        loadClientes();
+      } catch (err) {
+        setError(err.message || 'Error al archivar cliente');
+      }
+    }
+  };
+
   return (
     <div>
       <div className="flex-between">
         <h2 className="page-title">Gestión de Clientes</h2>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>
+        <button className="btn-primary" onClick={() => { setSelectedCliente(null); setShowModal(true); }}>
           + Nuevo Cliente
         </button>
       </div>
@@ -80,8 +96,9 @@ export default function Clientes() {
                     </span>
                   </td>
                   <td style={{ color: 'var(--text-muted)' }}>{cliente.telefono}</td>
-                  <td style={{ textAlign: 'right' }}>
-                     <button className="btn-secondary">Ver / Editar</button>
+                  <td style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                     <button className="btn-secondary" onClick={() => { setSelectedCliente(cliente); setShowModal(true); }}>Ver / Editar</button>
+                     <button className="btn-secondary" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }} onClick={() => handleDeleteCliente(cliente.id, cliente.nombre)}>Eliminar</button>
                   </td>
                 </tr>
               ))
@@ -92,6 +109,7 @@ export default function Clientes() {
 
       {showModal && (
         <ClienteForm 
+          cliente={selectedCliente}
           onClose={() => setShowModal(false)} 
           onSave={handleSaveCliente} 
         />

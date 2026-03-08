@@ -3,9 +3,9 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// GET all clientes
+// GET all active clientes
 router.get('/', (req, res) => {
-  db.all('SELECT * FROM clientes ORDER BY id DESC', [], (err, rows) => {
+  db.all('SELECT * FROM clientes WHERE activo = 1 ORDER BY id DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -88,16 +88,16 @@ router.put('/:id', (req, res) => {
   });
 });
 
-// DELETE cliente
+// DELETE (Soft-Delete / Archive) cliente
 router.delete('/:id', (req, res) => {
-  db.run('DELETE FROM clientes WHERE id = ?', [req.params.id], function(err) {
+  db.run('UPDATE clientes SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     if (this.changes === 0) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
-    res.json({ message: 'Cliente eliminado exitosamente' });
+    res.json({ message: 'Cliente archivado exitosamente' });
   });
 });
 

@@ -30,6 +30,7 @@ function initDb() {
         giro TEXT,
         notas_texto TEXT,
         notas_imagen TEXT, -- Path to uploaded image
+        activo INTEGER DEFAULT 1, -- 1: Active, 0: Archived/Deleted
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )

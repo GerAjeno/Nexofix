@@ -90,3 +90,23 @@ He reescrito los colores base y los estilos de CSS para darle un look "Premium" 
 2. **Cristal y Reflejos (Glassmorphism)**: Añadí brillos sutiles (radial gradients) al fondo general, y un degradado cyan fluorescente (`#00f2fe`) vibrante a algunos detalles, como el logo `NexoFix` de arriba, y a las opciones activas del Sidebar.
 3. **Hover Effects**: Los botones y tarjetas de métricas ahora se elevan y tienen sombras coloreadas muy agradables que invitan a interactuar.
 Si recargas la web (F5), verás un cambio radical en la nitidez y belleza de la interfaz, que ahora se ve espectacular. ¿Se ve mejor ahora?
+
+[08-03-2026 17:04:18] USER: 2 fallos que para mi son criticos.
+1.- Quiero que el Moo oscuro sea apto para pantallas AMOLED o pantallas OLED
+2.- Observa la imagen adjunta, la informacion aparece abajo del Sidebar y no al lado, verifica que esta mal hecho
+
+[08-03-2026 17:06:00] ASSISTANT: Tienes toda la razón, vi la imagen y esos dos errores son muy claros. Ya los he solucionado de inmediato:
+
+1. **Problema de Maquetación**: El contenido principal se estaba yendo abajo del menú porque había un duplicado de la regla CSS `.app-container` dictando que la pantalla se apilara en columna (`flex-direction: column`). He eliminado esa duplicidad para que el flexbox vuelva a fluir correctamente en fila y el contenido quede siempre a la derecha del Sidebar.
+2. **Modo Oscuro AMOLED (True Black)**: Modifiqué las variables de color. Cambié el color del fondo global y del menú lateral para que pasen del tono "Navy" a un negro absoluto (`#000000`), ideal para pantallas OLED. Además, removí el fondo con gradiente en el modo oscuro para evitar que esos píxeles se enciendan innecesariamente y mantener la pantalla apagada en los fondos. Las tarjetas secundarias ahora tienen un contraste mucho más gris oscuro/negro (`#0a0a0a`).
+
+Puedes recargar con F5 y debería verse perfecto en negro absoluto y con todo en su lugar. (También hice un commit y push a GitHub con la reparación).
+
+[08-03-2026 17:11:48] USER: Vamos bien, pude crear al cliente pero al pinchar en el boton Ver/Editar no sucede nada. revisa que es lo que sucede, tienes que dejar que pueda editar todos los parametros. Ademas al lado del boton Ver/Editar debes poner un boton para poder eliminar al cliente (No debes eliminar al cliente literalmente, debes marcarlo como eliminado, pero debes archivarlo, para cuando hayan ticket de trabajo, cotizaciones, cobros, notas, etc. enlazados a ese cliente, no existan errores)
+
+[08-03-2026 17:14:00] ASSISTANT: Todo solucionado y tal como lo pediste:
+1. **Ver/Editar habilitado**: Ahora, al hacer clic en "Ver/Editar", el sistema atrapa todos los datos del cliente seleccionado y abre el modal llenando la información correspondiente. Si la modificas y guardas, actualizará ese cliente en la base de datos de inmediato.
+2. **Botón Eliminar (Soft-Delete / Archivar)**: Diseñé un botón rojo "Eliminar" al lado de "Ver / Editar".
+3. **Persistencia de Relaciones (Archivado)**: Modifiqué el esquema de la base de datos `SQLite` añadiendo un nivel `activo` (1 o 0). Al presionar eliminar, el sistema **no** borra la fila, sino que la marca como `activo = 0`. Esto garantiza que todas las futuras Cotizaciones, Tickets o Trabajos históricos sigan manteniendo el enlace al cliente de forma segura en tus registros.
+
+Prueba crear uno nuevo, editarlo, o eliminarlo. La funcionalidad ya está corriendo en tu servidor local. (Además, respaldé este avance en GitHub). ¿Vamos con las Cotizaciones?
