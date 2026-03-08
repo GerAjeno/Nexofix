@@ -291,7 +291,7 @@ export default function CotizacionForm({ onClose, onSave }) {
 
             <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
               <div className="form-group" style={{ width: '220px', flexShrink: 0 }}>
-                <label className="form-label">Fecha de Emisión (DD/MM/AAAA) (*)</label>
+                <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
                 <div style={{ position: 'relative' }}>
                   <input 
                     type="text" 
