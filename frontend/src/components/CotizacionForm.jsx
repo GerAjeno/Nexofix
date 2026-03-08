@@ -373,6 +373,8 @@ export default function CotizacionForm({ onClose, onSave }) {
                 >
                   <option value="Corrientes Débiles">Corrientes Débiles</option>
                   <option value="Eléctrico">Eléctrico</option>
+                  <option value="Informática">Informática</option>
+                  <option value="Redes">Redes</option>
                   <option value="Soldadura">Soldadura</option>
                   <option value="Otros">Otros</option>
                 </select>
