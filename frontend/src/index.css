@@ -283,6 +283,24 @@ body {
   color: white;
 }
 
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: var(--sidebar-hover);
+  color: var(--primary);
+}
+
 /* Grilla del Dashboard */
 .dashboard-grid {
   display: grid;
