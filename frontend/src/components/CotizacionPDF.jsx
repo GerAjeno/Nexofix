@@ -89,10 +89,16 @@ export default function CotizacionPDF({ data, onClose }) {
                     <span style={{ fontWeight: 'bold', marginRight: '15px', color: '#4b5563' }}>Fecha Emisión:</span>
                     <span>{formatearFecha(data.fecha_emision)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
                     <span style={{ fontWeight: 'bold', marginRight: '15px', color: '#4b5563' }}>Validez:</span>
                     <span>{data.validez}</span>
                   </div>
+                  {data.tipo_trabajo && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontWeight: 'bold', marginRight: '15px', color: '#4b5563' }}>Tipo de Trabajo:</span>
+                      <span>{data.tipo_trabajo}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

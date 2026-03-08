@@ -23,6 +23,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     fecha_emision: new Date().toISOString().split('T')[0],
     fecha_emision_formateada: new Date().toLocaleDateString('es-CL'),
     validez: '15 días corridos',
+    tipo_trabajo: 'Corrientes Débiles',
     proyecto: '',
     descripcion_trabajo: '',
     condiciones_notas: 'La forma de pago es adelantando el 50% al cerrar el trato y el otro 50% al terminar el trabajo. Los equipos y trabajo tienen una garantia legal de 1 año desde su instalacion',
@@ -357,9 +358,23 @@ export default function CotizacionForm({ onClose, onSave }) {
                   value={formData.validez}
                   onChange={e => setFormData({...formData, validez: e.target.value})}
                 >
+                  <option value="5 días corridos">5 días corridos</option>
+                  <option value="10 días corridos">10 días corridos</option>
                   <option value="15 días corridos">15 días corridos</option>
                   <option value="30 días corridos">30 días corridos</option>
-                  <option value="60 días corridos">60 días corridos</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ width: '200px', flexShrink: 0 }}>
+                <label className="form-label">Tipo de Trabajo</label>
+                <select 
+                  className="form-control" 
+                  value={formData.tipo_trabajo}
+                  onChange={e => setFormData({...formData, tipo_trabajo: e.target.value})}
+                >
+                  <option value="Corrientes Débiles">Corrientes Débiles</option>
+                  <option value="Eléctrico">Eléctrico</option>
+                  <option value="Soldadura">Soldadura</option>
+                  <option value="Otros">Otros</option>
                 </select>
               </div>
             </div>

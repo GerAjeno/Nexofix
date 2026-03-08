@@ -44,6 +44,7 @@ function initDb() {
         cliente_id INTEGER,
         fecha_emision DATE,
         validez TEXT,
+        tipo_trabajo TEXT,
         proyecto TEXT,
         descripcion_trabajo TEXT,
         subtotal INTEGER,
