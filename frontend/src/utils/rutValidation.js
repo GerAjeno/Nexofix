@@ -17,3 +17,13 @@ export const dv = (T) => {
     S = (S + T % 10 * (9 - M++ % 6)) % 11;
   return S ? S - 1 : 'k';
 };
+
+export const formatRut = (value) => {
+  if (!value) return '';
+  // Remove all non-alphanumeric parameters
+  let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (clean.length <= 1) return clean;
+  // Always set the last character as DV
+  let result = clean.slice(0, -1) + '-' + clean.slice(-1);
+  return result;
+};

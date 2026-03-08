@@ -35,20 +35,41 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'tipo, rut, and nombre are required' });
   }
 
-  const sql = `
-    INSERT INTO clientes (tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen];
-
-  db.run(sql, params, function(err) {
-    if (err) {
-      if (err.message.includes('UNIQUE constraint')) {
-        return res.status(409).json({ error: 'El RUT ya existe en el sistema' });
+  // Check if rut exists
+  db.get('SELECT id, activo FROM clientes WHERE rut = ?', [rut], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    if (row) {
+      if (row.activo === 0) {
+        // Reactivate and update instead of failing unique constraint
+        const updateSql = `
+          UPDATE clientes 
+          SET tipo=?, nombre=?, representante=?, telefono=?, email=?, direccion=?, giro=?, notas_texto=?, notas_imagen=?, activo=1, updated_at=CURRENT_TIMESTAMP 
+          WHERE id=?
+        `;
+        const updateParams = [tipo, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, row.id];
+        
+        db.run(updateSql, updateParams, function(err) {
+          if (err) return res.status(500).json({ error: err.message });
+          return res.status(201).json({ id: row.id, message: 'Cliente reactivado y actualizado exitosamente' });
+        });
+        return;
+      } else {
+        return res.status(409).json({ error: 'El RUT ya existe en el sistema y está activo' });
       }
-      return res.status(500).json({ error: err.message });
     }
-    res.status(201).json({ id: this.lastID, message: 'Cliente creado exitosamente' });
+
+    // Normal INSERT
+    const sql = `
+      INSERT INTO clientes (tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, activo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `;
+    const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen];
+
+    db.run(sql, params, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({ id: this.lastID, message: 'Cliente creado exitosamente' });
+    });
   });
 });
 

@@ -110,3 +110,16 @@ Puedes recargar con F5 y debería verse perfecto en negro absoluto y con todo en
 3. **Persistencia de Relaciones (Archivado)**: Modifiqué el esquema de la base de datos `SQLite` añadiendo un nivel `activo` (1 o 0). Al presionar eliminar, el sistema **no** borra la fila, sino que la marca como `activo = 0`. Esto garantiza que todas las futuras Cotizaciones, Tickets o Trabajos históricos sigan manteniendo el enlace al cliente de forma segura en tus registros.
 
 Prueba crear uno nuevo, editarlo, o eliminarlo. La funcionalidad ya está corriendo en tu servidor local. (Además, respaldé este avance en GitHub). ¿Vamos con las Cotizaciones?
+
+[08-03-2026 17:24:16] USER: Varios cambios que hacer.
+1.- Quiero que la barra de desplazamiento se vea oscura ya que se ve muy clara y no se ve bien con el modo oscuro.
+2.- Quiero que el algoritmo del RUT no me obligue a poner el Guión Medio (-). por ejemplo, si el rut es 17104031-0 quiero que al poner el tur en este formato 171040310, el sistema tome automaticamente el ultimo numero como el digito verificador y ponga el Guión medio.
+3.- Cree a un cliente con un Rut luego lo eliminé, pero al crear nuevamente a ese cliente con el mismo RUT, el sistema me indica que no se puede por que el rut ya esta ingresado, y eso no debe ser asi, si el cliente esta Eliminado (activo=0) el sistema me debe dejar crearlo nuevamente con el mismo RUT.
+
+[08-03-2026 17:26:00] ASSISTANT: He aplicado y solucionado al instante las tres modificaciones:
+
+1. **Barra de Desplazamiento Oscura**: Integré código CSS para reemplazar la barra de scroll predeterminada del navegador (blanca/gris) por una delgada y oscura que combina perfectamente con nuestro diseño 'True Black'.
+2. **Auto-formateo del RUT**: Ajusté la lógica del formulario. Ahora, a medida que escribes el RUT (ej: '171040310'), el algoritmo toma automáticamente el último carácter, asume que es el dígito verificador y le inserta el guión en medio. También limpiará cualquier símbolo incorrecto o punto adicional que intentes poner.
+3. **Reactivación Automática (El problema del RUT)**: Modifiqué el servidor (backend). Cuando intentas registrar a un nuevo cliente, el servidor revisa si ese RUT ya existía. Si estaba "Eliminado" (`activo = 0`), en vez de lanzar el error "El RUT ya está ingresado", el servidor reemplazará toda su información con la que acabas de escribir y lo volverá a marcar como "Activo", reviviéndolo limpiamente y reciclando el historial. 
+
+Abre de nuevo tu web local ([http://localhost:5173](http://localhost:5173)) y verás que ahora todo esto fluye perfectamente. Todo está respaldado en GitHub. ¡Adelante con tu revisión!

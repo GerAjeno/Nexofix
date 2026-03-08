@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { validarRut } from '../utils/rutValidation';
+import { validarRut, formatRut } from '../utils/rutValidation';
 
 export default function ClienteForm({ onClose, onSave, cliente = null }) {
   const [formData, setFormData] = useState(
@@ -20,7 +20,12 @@ export default function ClienteForm({ onClose, onSave, cliente = null }) {
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    
+    if (name === 'rut') {
+      value = formatRut(value);
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
