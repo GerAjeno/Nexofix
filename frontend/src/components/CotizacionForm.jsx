@@ -48,7 +48,16 @@ export default function CotizacionForm({ onClose, onSave }) {
     plantillasService.getItems().then(data => setCatalogoItems(data)).catch(err => console.error(err));
     
     // Asignar número base una vez abierto el modal
-    setFormData(prev => ({ ...prev, numero_cotizacion: generarNumeroCotizacion() }));
+    const hoy = new Date().toISOString().split('T')[0];
+    const [y, m, d] = hoy.split('-');
+    const hoyFormateado = `${d}/${m}/${y}`;
+    
+    setFormData(prev => ({
+      ...prev, 
+      numero_cotizacion: generarNumeroCotizacion(), // Keep original logic for generation
+      fecha_emision: hoy,
+      fecha_emision_formateada: hoyFormateado
+    }));
   }, []);
 
   // Calcular totales matemáticos en tiempo real cuando cambian los ítems o el descuento
@@ -90,6 +99,36 @@ export default function CotizacionForm({ onClose, onSave }) {
   const removeItem = (index) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleDateChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Solo números
+    if (value.length > 8) value = value.slice(0, 8);
+
+    // Auto-formatear DD/MM/AAAA
+    let formatted = value;
+    if (value.length > 2) {
+      formatted = value.slice(0, 2) + '/' + value.slice(2);
+    }
+    if (value.length > 4) {
+      formatted = formatted.slice(0, 5) + '/' + value.slice(4);
+    }
+
+    // Actualizar el valor visual (para el input de texto) - lo guardaremos en un estado temporal si es necesario
+    setFormData({...formData, fecha_emision_formateada: formatted});
+
+    // Si está completo, actualizar el estado real en YYYY-MM-DD
+    if (value.length === 8) {
+      const d = value.slice(0, 2);
+      const m = value.slice(2, 4);
+      const y = value.slice(4, 8);
+      // Validar fecha básica
+      const mesNum = parseInt(m);
+      const diaNum = parseInt(d);
+      if (mesNum >= 1 && mesNum <= 12 && diaNum >= 1 && diaNum <= 31) {
+        setFormData(prev => ({...prev, fecha_emision: `${y}-${m}-${d}`, fecha_emision_formateada: formatted}));
+      }
     }
   };
 
@@ -232,28 +271,38 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="form-label">Fecha de Emisión (DD/MM/AAAA) (*)</label>
+                <div style={{ position: 'relative' }}>
                   <input 
-                    type="date" 
+                    type="text" 
                     className="form-control" 
-                    value={formData.fecha_emision}
-                    onChange={e => setFormData({...formData, fecha_emision: e.target.value})}
+                    placeholder="DD/MM/AAAA"
+                    value={formData.fecha_emision_formateada || ''}
+                    onChange={handleDateChange}
+                    maxLength="10"
                     required
+                    style={{ 
+                      fontSize: '1.1rem', 
+                      letterSpacing: '1px', 
+                      fontWeight: '500', 
+                      textAlign: 'center',
+                      color: 'var(--primary)',
+                      borderColor: (formData.fecha_emision_formateada?.length === 10) ? 'var(--primary)' : 'var(--border-color)'
+                    }}
                   />
-                  <div style={{ 
-                    padding: '8px 12px', 
-                    backgroundColor: 'var(--sidebar-hover)', 
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                    color: 'var(--primary)',
-                    minWidth: '120px',
-                    textAlign: 'center',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    {formData.fecha_emision ? new Date(formData.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL') : '--/--/----'}
-                  </div>
+                  {formData.fecha_emision_formateada?.length === 10 && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      right: '10px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      color: 'var(--primary)' 
+                    }}>
+                      <Save size={16} />
+                    </div>
+                  )}
                 </div>
+                <small style={{ color: '#64748b' }}>Escriba los números seguido.</small>
               </div>
             </div>
 
