@@ -158,6 +158,22 @@ export default function CotizacionForm({ onClose, onSave }) {
       }
     }
   };
+  
+  const handleDiscountChange = (e) => {
+    // Eliminar todo lo que no sea número
+    const rawValue = e.target.value.replace(/\D/g, '');
+    const numericValue = rawValue === '' ? 0 : parseInt(rawValue);
+    
+    setTotales(prev => ({
+      ...prev,
+      descuento_monto: numericValue
+    }));
+  };
+
+  const formatDisplayDiscount = (value) => {
+    if (!value || value === 0) return '';
+    return `- $${value.toLocaleString('es-CL')}`;
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -508,12 +524,18 @@ export default function CotizacionForm({ onClose, onSave }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
                   <span>Descuento ($):</span>
                   <input 
-                    type="number" 
+                    type="text" 
                     className="form-control" 
-                    style={{ width: '100px', padding: '0.25rem', textAlign: 'right' }} 
-                    min="0"
-                    value={totales.descuento_monto}
-                    onChange={(e) => setTotales({...totales, descuento_monto: e.target.value})}
+                    style={{ 
+                      width: '120px', 
+                      padding: '0.25rem', 
+                      textAlign: 'right',
+                      color: totales.descuento_monto > 0 ? 'var(--warning)' : 'inherit',
+                      fontWeight: totales.descuento_monto > 0 ? 'bold' : 'normal'
+                    }} 
+                    placeholder="$ 0"
+                    value={formatDisplayDiscount(totales.descuento_monto)}
+                    onChange={handleDiscountChange}
                   />
                 </div>
                 {totales.monto_impuesto > 0 && (
