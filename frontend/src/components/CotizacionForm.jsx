@@ -126,6 +126,54 @@ export default function CotizacionForm({ onClose, onSave }) {
     }
   };
 
+  const handleSaveTextTemplate = async (tipo) => {
+    const contenido = tipo === 'descripcion' ? formData.descripcion_trabajo : formData.condiciones_notas;
+    if (!contenido.trim()) {
+      alert('El contenido no puede estar vacío');
+      return;
+    }
+
+    const nombre = prompt(`Ingrese un nombre para esta plantilla de ${tipo}:`);
+    if (!nombre) return;
+
+    try {
+      await plantillasService.createTexto({ tipo, nombre, contenido });
+      alert('Plantilla guardada con éxito');
+      // Recargar plantillas
+      if (tipo === 'descripcion') {
+        const data = await plantillasService.getTextos('descripcion');
+        setPlantillasDesc(data);
+      } else {
+        const data = await plantillasService.getTextos('condiciones');
+        setPlantillasCond(data);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar la plantilla');
+    }
+  };
+
+  const handleSaveItemToCatalog = async (item) => {
+    if (!item.descripcion.trim()) {
+      alert('La descripción del ítem no puede estar vacía');
+      return;
+    }
+
+    try {
+      await plantillasService.createItem({ 
+        nombre: item.descripcion, 
+        precio_unitario: Number(item.precio_unitario) 
+      });
+      alert('Ítem añadido al catálogo');
+      // Recargar catálogo
+      const data = await plantillasService.getItems();
+      setCatalogoItems(data);
+    } catch (err) {
+      console.error(err);
+      alert('Error al añadir al catálogo');
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: '900px' }}>
@@ -165,14 +213,19 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Fecha de Emisión</label>
-                <input 
-                  type="date" 
-                  className="form-control" 
-                  value={formData.fecha_emision}
-                  onChange={e => setFormData({...formData, fecha_emision: e.target.value})}
-                  required
-                />
+                <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input 
+                    type="date" 
+                    className="form-control" 
+                    value={formData.fecha_emision}
+                    onChange={e => setFormData({...formData, fecha_emision: e.target.value})}
+                    required
+                  />
+                  <span style={{ color: 'var(--primary)', fontWeight: 'bold', minWidth: '100px' }}>
+                    {new Date(formData.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL')}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -202,25 +255,35 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Descripción del Trabajo</label>
-                {plantillasDesc.length > 0 && (
-                  <select 
-                    className="form-control" 
-                    style={{ width: '200px', padding: '2px 8px', fontSize: '12px' }}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setFormData({...formData, descripcion_trabajo: e.target.value});
-                      }
-                    }}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {plantillasDesc.length > 0 && (
+                    <select 
+                      className="form-control" 
+                      style={{ width: '160px', padding: '2px 8px', fontSize: '11px' }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setFormData({...formData, descripcion_trabajo: e.target.value});
+                        }
+                      }}
+                    >
+                      <option value="">Cargar plantilla...</option>
+                      {plantillasDesc.map(p => (
+                        <option key={p.id} value={p.contenido}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    onClick={() => handleSaveTextTemplate('descripcion')}
                   >
-                    <option value="">Cargar plantilla...</option>
-                    {plantillasDesc.map(p => (
-                      <option key={p.id} value={p.contenido}>{p.nombre}</option>
-                    ))}
-                  </select>
-                )}
+                    Guardar como plantilla
+                  </button>
+                </div>
               </div>
               <textarea 
                 className="form-control" 
@@ -243,7 +306,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                     <th style={{ width: '100px' }}>Cant.</th>
                     <th style={{ width: '150px' }}>Precio Unit. ($)</th>
                     <th style={{ width: '150px' }}>Total</th>
-                    <th style={{ width: '60px' }}></th>
+                    <th style={{ width: '80px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -302,14 +365,26 @@ export default function CotizacionForm({ onClose, onSave }) {
                         ${(item.cantidad * item.precio_unitario).toLocaleString('es-CL')}
                       </td>
                       <td style={{ padding: '0.5rem', verticalAlign: 'middle', textAlign: 'center' }}>
-                        <button 
-                          type="button"
-                          className="btn-close"
-                          onClick={() => removeItem(index)}
-                          title="Eliminar ítem"
-                        >
-                          <Trash2 size={16} color="var(--warning)" />
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <button 
+                            type="button"
+                            className="icon-btn"
+                            onClick={() => handleSaveItemToCatalog(item)}
+                            title="Añadir al catálogo"
+                            style={{ color: 'var(--primary)', padding: '5px' }}
+                          >
+                            <Plus size={16} />
+                          </button>
+                          <button 
+                            type="button"
+                            className="btn-close"
+                            onClick={() => removeItem(index)}
+                            title="Eliminar ítem"
+                            style={{ padding: '5px' }}
+                          >
+                            <Trash2 size={16} color="var(--warning)" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -354,22 +429,32 @@ export default function CotizacionForm({ onClose, onSave }) {
             <div className="form-group" style={{ marginTop: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Condiciones y Notas</label>
-                {plantillasCond.length > 0 && (
-                  <select 
-                    className="form-control" 
-                    style={{ width: '200px', padding: '2px 8px', fontSize: '12px' }}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setFormData({...formData, condiciones_notas: e.target.value});
-                      }
-                    }}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {plantillasCond.length > 0 && (
+                    <select 
+                      className="form-control" 
+                      style={{ width: '160px', padding: '2px 8px', fontSize: '11px' }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setFormData({...formData, condiciones_notas: e.target.value});
+                        }
+                      }}
+                    >
+                      <option value="">Cargar plantilla...</option>
+                      {plantillasCond.map(p => (
+                        <option key={p.id} value={p.contenido}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    onClick={() => handleSaveTextTemplate('condiciones')}
                   >
-                    <option value="">Cargar plantilla...</option>
-                    {plantillasCond.map(p => (
-                      <option key={p.id} value={p.contenido}>{p.nombre}</option>
-                    ))}
-                  </select>
-                )}
+                    Guardar como plantilla
+                  </button>
+                </div>
               </div>
               <textarea 
                 className="form-control" 
