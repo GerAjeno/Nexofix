@@ -1,5 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, LayoutDashboard, Users, FileText, Settings, CreditCard, Calendar } from 'lucide-react';
+import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar } from 'lucide-react';
 
 export default function Sidebar({ theme, toggleTheme }) {
   const location = useLocation();
@@ -8,7 +7,7 @@ export default function Sidebar({ theme, toggleTheme }) {
     { path: '/', name: 'Dashboard', icon: LayoutDashboard },
     { path: '/clientes', name: 'Clientes', icon: Users },
     { path: '/cotizaciones', name: 'Cotizaciones', icon: FileText },
-    { path: '/tickets', name: 'Tickets', icon: Settings },
+    { path: '/tickets', name: 'Tickets', icon: ClipboardList },
     { path: '/agenda', name: 'Agenda', icon: Calendar },
     { path: '/cobranza', name: 'Cobranza', icon: CreditCard },
   ];

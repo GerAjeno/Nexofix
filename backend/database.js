@@ -91,6 +91,24 @@ function initDb() {
         activo INTEGER DEFAULT 1
       )
     `);
+
+    // Tabla de Tickets / Trabajos
+    db.run(`
+      CREATE TABLE IF NOT EXISTS tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        numero_ticket TEXT UNIQUE,
+        cliente_id INTEGER,
+        cotizacion_id INTEGER,
+        fecha_creacion TEXT DEFAULT (DATE('now')),
+        estado TEXT DEFAULT 'Pendiente', -- 'Pendiente', 'En Proceso', 'Terminado', 'Cancelado'
+        prioridad TEXT DEFAULT 'Media', -- 'Baja', 'Media', 'Alta'
+        descripcion_problema TEXT,
+        notas_tecnicas TEXT,
+        activo INTEGER DEFAULT 1,
+        FOREIGN KEY (cliente_id) REFERENCES clientes (id),
+        FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones (id)
+      )
+    `);
     
     console.log('Database tables initialized.');
   });
