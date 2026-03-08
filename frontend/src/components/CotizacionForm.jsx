@@ -104,31 +104,47 @@ export default function CotizacionForm({ onClose, onSave }) {
   };
 
   const handleDateChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Solo números
-    if (value.length > 8) value = value.slice(0, 8);
+    let rawValue = e.target.value.replace(/\D/g, ''); // Solo números
+    if (rawValue.length > 8) rawValue = rawValue.slice(0, 8);
+
+    // Validar por partes durante la escritura
+    if (rawValue.length >= 2) {
+      const dia = parseInt(rawValue.slice(0, 2));
+      if (dia < 1 || dia > 31) return; // No permitir días inválidos
+    }
+    if (rawValue.length >= 4) {
+      const mes = parseInt(rawValue.slice(2, 4));
+      if (mes < 1 || mes > 12) return; // No permitir meses inválidos
+    }
 
     // Auto-formatear DD/MM/AAAA
-    let formatted = value;
-    if (value.length > 2) {
-      formatted = value.slice(0, 2) + '/' + value.slice(2);
+    let formatted = rawValue;
+    if (rawValue.length > 2) {
+      formatted = rawValue.slice(0, 2) + '/' + rawValue.slice(2);
     }
-    if (value.length > 4) {
-      formatted = formatted.slice(0, 5) + '/' + value.slice(4);
+    if (rawValue.length > 4) {
+      formatted = formatted.slice(0, 5) + '/' + rawValue.slice(4);
     }
 
-    // Actualizar el valor visual (para el input de texto) - lo guardaremos en un estado temporal si es necesario
-    setFormData({...formData, fecha_emision_formateada: formatted});
+    // Actualizar el valor visual
+    setFormData(prev => ({...prev, fecha_emision_formateada: formatted}));
 
-    // Si está completo, actualizar el estado real en YYYY-MM-DD
-    if (value.length === 8) {
-      const d = value.slice(0, 2);
-      const m = value.slice(2, 4);
-      const y = value.slice(4, 8);
-      // Validar fecha básica
-      const mesNum = parseInt(m);
-      const diaNum = parseInt(d);
-      if (mesNum >= 1 && mesNum <= 12 && diaNum >= 1 && diaNum <= 31) {
-        setFormData(prev => ({...prev, fecha_emision: `${y}-${m}-${d}`, fecha_emision_formateada: formatted}));
+    // Si está completo (8 dígitos), actualizar el estado real y validado
+    if (rawValue.length === 8) {
+      const d = rawValue.slice(0, 2);
+      const m = rawValue.slice(2, 4);
+      const y = rawValue.slice(4, 8);
+      
+      // Verificación final de fecha real (ej: no permitir 31/02)
+      const dateCheck = new Date(`${y}-${m}-${d}T12:00:00`);
+      if (!isNaN(dateCheck.getTime()) && dateCheck.getDate() === parseInt(d)) {
+        setFormData(prev => ({
+          ...prev, 
+          fecha_emision: `${y}-${m}-${d}`,
+          fecha_emision_formateada: formatted
+        }));
+      } else {
+        alert('Fecha inválida');
       }
     }
   };
