@@ -1,3 +1,4 @@
+import { Link, useLocation } from 'react-router-dom';
 import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar } from 'lucide-react';
 
 export default function Sidebar({ theme, toggleTheme }) {
