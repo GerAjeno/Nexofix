@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar, X as CloseIcon } from 'lucide-react';
+import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar } from 'lucide-react';
 
 export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
   const location = useLocation();
@@ -22,19 +22,6 @@ export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
 
   return (
     <aside className={`sidebar ${!isOpen ? 'collapsed' : ''}`}>
-      <div className="sidebar-header">
-        <h1 className="logo">NexoFix</h1>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          {/* Botón de cerrar visible solo en móvil dentro del sidebar como alternativa */}
-          <button className="theme-toggle mobile-only-btn" onClick={onClose} style={{ display: window.innerWidth <= 768 ? 'flex' : 'none' }}>
-            <CloseIcon size={20} />
-          </button>
-        </div>
-      </div>
-      
       <nav className="nav-menu">
         {navItems.map((item) => {
           const Icon = item.icon;
