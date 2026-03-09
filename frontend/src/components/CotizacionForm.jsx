@@ -374,44 +374,39 @@ export default function CotizacionForm({ onClose, onSave }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-              <div className="form-group" style={{ width: '220px', flexShrink: 0 }}>
-                <label className="form-label">Fecha de Emisión (DD/MM/AAAA)</label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="DD/MM/AAAA"
-                    value={formData.fecha_emision_formateada || ''}
-                    onChange={handleDateChange}
-                    maxLength="10"
-                    required
-                    style={{ 
-                      fontSize: '1rem', 
-                      letterSpacing: '0.5px', 
-                      fontWeight: '500', 
-                      textAlign: 'center',
-                      color: 'var(--primary)',
-                      borderColor: (formData.fecha_emision_formateada?.length === 10) ? 'var(--primary)' : 'var(--border-color)'
-                    }}
-                  />
-                </div>
-                <small style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Mascará: DD/MM/AAAA</small>
-              </div>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div className="form-group" style={{ width: '180px', flexShrink: 0 }}>
+                <label className="form-label">Fecha (DD/MM/AAAA)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="DD/MM/AAAA"
+                  value={formData.fecha_emision_formateada || ''}
+                  onChange={handleDateChange}
+                  maxLength="10"
+                  required
+                  style={{ 
+                    fontSize: '0.9rem', 
+                    textAlign: 'center',
+                    color: 'var(--primary)',
+                    borderColor: (formData.fecha_emision_formateada?.length === 10) ? 'var(--primary)' : 'var(--border-color)'
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ width: '150px', flexShrink: 0 }}>
                 <label className="form-label">Validez</label>
                 <select 
                   className="form-control" 
                   value={formData.validez}
                   onChange={e => setFormData({...formData, validez: e.target.value})}
                 >
-                  <option value="5 días corridos">5 días corridos</option>
-                  <option value="10 días corridos">10 días corridos</option>
-                  <option value="15 días corridos">15 días corridos</option>
-                  <option value="30 días corridos">30 días corridos</option>
+                  <option value="5 días corridos">5 días</option>
+                  <option value="10 días corridos">10 días</option>
+                  <option value="15 días corridos">15 días</option>
+                  <option value="30 días corridos">30 días</option>
                 </select>
               </div>
-              <div className="form-group" style={{ width: '200px', flexShrink: 0 }}>
+              <div className="form-group" style={{ flex: 1, minWidth: '160px' }}>
                 <label className="form-label">Tipo de Trabajo</label>
                 <select 
                   className="form-control" 
@@ -427,7 +422,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                   <option value="Otros">Otros</option>
                 </select>
               </div>
-              <div className="form-group" style={{ width: '180px', flexShrink: 0 }}>
+              <div className="form-group" style={{ width: '150px', flexShrink: 0 }}>
                 <label className="form-label">Estado</label>
                 <select 
                   className="form-control" 

@@ -89,6 +89,7 @@ export default function TicketPDF({ data, onClose }) {
                     <FileText size={16} /> Detalles del Servicio
                   </h3>
                   <div style={{ marginBottom: '6px' }}><strong>Proyecto:</strong> {data.proyecto_nombre || 'Servicio General'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Tipo de Trabajo:</strong> {data.tipo_trabajo || 'No especificado'}</div>
                   <div style={{ marginBottom: '6px' }}><strong>Fecha Inicio:</strong> {formatearFecha(data.fecha_creacion)}</div>
                   <div style={{ marginBottom: '6px' }}><strong>Prioridad:</strong> {data.prioridad}</div>
                   <div style={{ marginBottom: '6px' }}><strong>Estado:</strong> {data.estado}</div>

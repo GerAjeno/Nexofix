@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const sql = `
     SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
-           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion
+           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion, t.tipo_trabajo
     FROM tickets t
     JOIN clientes c ON t.cliente_id = c.id
     LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
@@ -43,6 +43,7 @@ router.post('/', (req, res) => {
     cotizacion_id, 
     direccion_trabajo,
     telefono_contacto,
+    tipo_trabajo,
     estado, 
     prioridad, 
     descripcion_problema, 
@@ -55,9 +56,9 @@ router.post('/', (req, res) => {
 
   const sql = `
     INSERT INTO tickets (
-      numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto,
+      numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto, tipo_trabajo,
       fecha_creacion, estado, prioridad, descripcion_problema, notas_tecnicas
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(sql, [
@@ -66,6 +67,7 @@ router.post('/', (req, res) => {
     cotizacion_id || null, 
     direccion_trabajo,
     telefono_contacto,
+    tipo_trabajo,
     fecha, 
     estado || 'Pendiente', 
     prioridad || 'Media', 
@@ -79,13 +81,13 @@ router.post('/', (req, res) => {
 
 // PUT actualizar ticket
 router.put('/:id', (req, res) => {
-  const { estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto } = req.body;
+  const { estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, tipo_trabajo } = req.body;
   const sql = `
     UPDATE tickets 
-    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, direccion_trabajo = ?, telefono_contacto = ?
+    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, direccion_trabajo = ?, telefono_contacto = ?, tipo_trabajo = ?
     WHERE id = ?
   `;
-  db.run(sql, [estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, req.params.id], function(err) {
+  db.run(sql, [estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, tipo_trabajo, req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ updated: this.changes });
   });

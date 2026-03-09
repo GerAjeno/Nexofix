@@ -12,6 +12,7 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     cotizacion_id: '',
     direccion_trabajo: '',
     telefono_contacto: '',
+    tipo_trabajo: '',
     estado: 'Pendiente',
     prioridad: 'Media',
     descripcion_problema: '',
@@ -42,6 +43,7 @@ export default function TicketForm({ ticket, onClose, onSave }) {
         cotizacion_id: ticket.cotizacion_id || '',
         direccion_trabajo: ticket.direccion_trabajo || '',
         telefono_contacto: ticket.telefono_contacto || '',
+        tipo_trabajo: ticket.tipo_trabajo || '',
         estado: ticket.estado,
         prioridad: ticket.prioridad,
         descripcion_problema: ticket.descripcion_problema,
@@ -126,6 +128,7 @@ export default function TicketForm({ ticket, onClose, onSave }) {
                     // Priorizar dirección y teléfono de la cotización si existe
                     direccion_trabajo: selectedCot ? (selectedCot.direccion_trabajo || prev.direccion_trabajo) : prev.direccion_trabajo,
                     telefono_contacto: selectedCot ? (selectedCot.telefono_contacto || prev.telefono_contacto) : prev.telefono_contacto,
+                    tipo_trabajo: selectedCot ? (selectedCot.tipo_trabajo || prev.tipo_trabajo) : prev.tipo_trabajo,
                     // Auto-completar descripción si está vacía
                     descripcion_problema: (prev.descripcion_problema === '' && selectedCot) 
                       ? selectedCot.descripcion_trabajo 
@@ -179,6 +182,23 @@ export default function TicketForm({ ticket, onClose, onSave }) {
                 <option value="En Proceso">En Proceso</option>
                 <option value="Terminado">Terminado</option>
                 <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Tipo de Trabajo</label>
+              <select 
+                className="form-control" 
+                value={formData.tipo_trabajo}
+                onChange={e => setFormData({...formData, tipo_trabajo: e.target.value})}
+              >
+                <option value="">Selecciona tipo...</option>
+                <option value="Corrientes Débiles">Corrientes Débiles</option>
+                <option value="Eléctrico">Eléctrico</option>
+                <option value="Informática">Informática</option>
+                <option value="Redes">Redes</option>
+                <option value="Soldadura">Soldadura</option>
+                <option value="Garantía">Garantía</option>
+                <option value="Otros">Otros</option>
               </select>
             </div>
             <div className="form-group">

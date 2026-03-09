@@ -97,6 +97,7 @@ function initDb() {
         cotizacion_id INTEGER,
         direccion_trabajo TEXT,
         telefono_contacto TEXT,
+        tipo_trabajo TEXT,
         fecha_creacion TEXT DEFAULT (DATE('now')),
         estado TEXT DEFAULT 'Pendiente', -- 'Pendiente', 'En Proceso', 'Terminado', 'Cancelado'
         prioridad TEXT DEFAULT 'Media', -- 'Baja', 'Media', 'Alta'
