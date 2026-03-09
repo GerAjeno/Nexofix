@@ -33,7 +33,7 @@ export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
               className={`nav-item ${isActive ? 'active' : ''}`}
               onClick={handleLinkClick}
             >
-              <Icon size={20} style={{ marginRight: '12px' }} />
+              <Icon size={20} className="nav-icon" />
               {item.name}
             </Link>
           );
