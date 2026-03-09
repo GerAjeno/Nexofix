@@ -63,6 +63,7 @@ export default function Cotizaciones() {
             <tr>
               <th>N° Cotización</th>
               <th>Fecha</th>
+              <th>Proyecto</th>
               <th>Cliente</th>
               <th>Total</th>
               <th style={{textAlign: 'right'}}>Acciones</th>
@@ -73,6 +74,7 @@ export default function Cotizaciones() {
               <tr key={cot.id}>
                 <td>{cot.numero_cotizacion}</td>
                 <td>{new Date(cot.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL')}</td>
+                <td style={{ fontWeight: '500', color: 'var(--primary)' }}>{cot.proyecto || '-'}</td>
                 <td>{cot.cliente_nombre || 'Cliente Desconocido'}</td>
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
                 <td style={{textAlign: 'right'}}>
@@ -97,7 +99,7 @@ export default function Cotizaciones() {
             ))}
             {cotizaciones.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>No hay cotizaciones registradas.</td>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No hay cotizaciones registradas.</td>
               </tr>
             )}
           </tbody>
