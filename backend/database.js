@@ -119,23 +119,20 @@ function initDb() {
       }
     });
     
-    // Tablas para Plantillas de Itemizados Completos
     db.run(`
-      CREATE TABLE IF NOT EXISTS plantillas_itemizados (
+      CREATE TABLE IF NOT EXISTS cobranzas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT UNIQUE,
-        activo INTEGER DEFAULT 1
-      )
-    `);
-
-    db.run(`
-      CREATE TABLE IF NOT EXISTS plantillas_itemizados_detalles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        plantilla_id INTEGER,
-        descripcion TEXT,
-        cantidad REAL,
-        precio_unitario INTEGER,
-        FOREIGN KEY (plantilla_id) REFERENCES plantillas_itemizados (id) ON DELETE CASCADE
+        numero_cobro TEXT UNIQUE,
+        ticket_id INTEGER,
+        cliente_id INTEGER,
+        cotizacion_id INTEGER,
+        fecha_creacion TEXT DEFAULT (DATE('now')),
+        estado TEXT DEFAULT 'En Cobro', -- 'En Cobro', 'Cobrado', 'Rechazado'
+        monto_total INTEGER DEFAULT 0,
+        activo INTEGER DEFAULT 1,
+        FOREIGN KEY (ticket_id) REFERENCES tickets(id),
+        FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+        FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id)
       )
     `);
 

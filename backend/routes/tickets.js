@@ -129,8 +129,44 @@ router.put('/:id', (req, res) => {
     direccion_trabajo, telefono_contacto, tipo_trabajo,
     jornada, fecha_agendada,
     req.params.id
-  ], function(err) {
+  ], async function(err) {
     if (err) return res.status(500).json({ error: err.message });
+    
+    // Automatización: Si pasa a Terminado, generar Cobranza
+    if (nuevoEstado === 'Terminado' && this.changes > 0) {
+      try {
+        // Traer datos del ticket para el cobro
+        const ticketSql = `SELECT * FROM tickets WHERE id = ?`;
+        db.get(ticketSql, [req.params.id], (errT, ticket) => {
+          if (ticket) {
+            // Generar número de cobro COB-XXXXXX
+            const numero_cobro = `COB-${Math.floor(100000 + Math.random() * 900000)}`;
+            
+            // Obtener total de la cotización si existe
+            if (ticket.cotizacion_id) {
+              const cotSql = `SELECT total_final FROM cotizaciones WHERE id = ?`;
+              db.get(cotSql, [ticket.cotizacion_id], (errC, cot) => {
+                const monto = cot ? cot.total_final : 0;
+                const cobSql = `
+                  INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, cotizacion_id, monto_total)
+                  VALUES (?, ?, ?, ?, ?)
+                `;
+                db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id, ticket.cotizacion_id, monto]);
+              });
+            } else {
+              const cobSql = `
+                INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, monto_total)
+                VALUES (?, ?, ?, 0)
+              `;
+              db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id]);
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Error generando cobranza automática:", e);
+      }
+    }
+
     res.json({ updated: this.changes, nuevoEstado });
   });
 });

@@ -7,6 +7,7 @@ import Clientes from './pages/Clientes';
 import Cotizaciones from './pages/Cotizaciones';
 import Tickets from './pages/Tickets';
 import Agenda from './pages/Agenda';
+import Cobranzas from './pages/Cobranzas';
 
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -66,7 +67,7 @@ function App() {
                 <Route path="/cotizaciones" element={<Cotizaciones />} />
                 <Route path="/tickets" element={<Tickets />} />
                 <Route path="/agenda" element={<Agenda />} />
-                <Route path="/cobranza" element={<div className="card"><h2 className="page-title">Cobranza</h2><p className="page-subtitle">Módulo en construcción</p></div>} />
+                <Route path="/cobranzas" element={<Cobranzas />} />
               </Routes>
             </main>
           </div>
