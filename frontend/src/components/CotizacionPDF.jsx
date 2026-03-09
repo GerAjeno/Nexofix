@@ -55,14 +55,14 @@ export default function CotizacionPDF({ data, onClose }) {
           <div ref={printRef} style={{ width: '100%', minHeight: '11in', background: '#fff', color: '#333', fontFamily: '"Arial", sans-serif', fontSize: '14px', lineHeight: 1.5 }}>
             
             {/* Header / Franja Azul Superior */}
-            <div style={{ background: '#14b8a6', background: 'linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%)', padding: '2rem 3rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--success) 100%)', padding: '2rem 3rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                {/* Logo Escudo Placeholder */}
-                <div style={{ width: '60px', height: '60px', background: '#1e3a8a', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', border: '2px solid #38bdf8' }}>
-                  <ShieldCheck size={36} color="#fde047" />
+                {/* Logo Oficial */}
+                <div style={{ width: '64px', height: '64px', background: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', padding: '5px' }}>
+                  <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', letterSpacing: '0.05em' }}>NexoFix SpA</h1>
+                  <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', letterSpacing: '-0.02em', lineHeight: '1' }}>NexoFix SpA</h1>
                   <span style={{ fontSize: '14px', opacity: 0.9 }}>Servicios Integrales</span>
                 </div>
               </div>
@@ -113,7 +113,7 @@ export default function CotizacionPDF({ data, onClose }) {
               {/* Tabla de ítems */}
               <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '2rem' }}>
                 <thead>
-                  <tr style={{ backgroundColor: '#0ea5e9', color: '#ffffff' }}>
+                  <tr style={{ backgroundColor: 'var(--primary)', color: '#ffffff' }}>
                     <th style={{ padding: '12px 15px', textAlign: 'left', borderTopLeftRadius: '4px' }}>Descripción</th>
                     <th style={{ padding: '12px 15px', textAlign: 'center' }}>Cantidad</th>
                     <th style={{ padding: '12px 15px', textAlign: 'right' }}>Precio Unitario</th>
