@@ -100,7 +100,7 @@ export default function TicketForm({ ticket, onClose, onSave }) {
       <div className="modal-content" style={{ maxWidth: '750px', backgroundColor: '#000', border: '1px solid #333' }}>
         <div className="modal-header">
           <h2 className="modal-title">{ticket ? `Editar Trabajo ${ticket.numero_ticket}` : 'Nuevo Trabajo / Ticket'}</h2>
-          <button className="close-btn" onClick={onClose}><X size={24} /></button>
+          <button className="btn-close" onClick={onClose}><X size={24} /></button>
         </div>
 
         {error && (
