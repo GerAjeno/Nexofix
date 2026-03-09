@@ -18,6 +18,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     descripcion_problema: '',
     notas_tecnicas: ''
   });
+  const [cotizacionDetalle, setCotizacionDetalle] = useState(null);
+  const [isLoadingDetalle, setIsLoadingDetalle] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -51,6 +53,28 @@ export default function TicketForm({ ticket, onClose, onSave }) {
       });
     }
   }, [ticket]);
+
+  // Cargar detalles de la cotización cuando cambie la selección
+  useEffect(() => {
+    const loadCotizacionDetalle = async () => {
+      if (!formData.cotizacion_id) {
+        setCotizacionDetalle(null);
+        return;
+      }
+      
+      setIsLoadingDetalle(true);
+      try {
+        const data = await cotizacionesService.getById(formData.cotizacion_id);
+        setCotizacionDetalle(data);
+      } catch (err) {
+        console.error('Error cargando detalle de cotización:', err);
+      } finally {
+        setIsLoadingDetalle(false);
+      }
+    };
+
+    loadCotizacionDetalle();
+  }, [formData.cotizacion_id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -237,6 +261,60 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               onChange={e => setFormData({...formData, notas_tecnicas: e.target.value})}
             ></textarea>
           </div>
+
+          {/* Panel de Referencia Técnica (Cotización) */}
+          {cotizacionDetalle && (
+            <div style={{ 
+              marginTop: '1.5rem', 
+              padding: '1rem', 
+              background: 'rgba(255, 255, 255, 0.05)', 
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <h4 style={{ margin: '0 0 1rem 0', color: 'var(--primary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} /> Información de la Cotización Relacionada
+              </h4>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', opacity: 0.8 }}>Ítems Cotizados:</h5>
+                  <div style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.85rem' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(255,255,255,0.1)', textAlign: 'left' }}>
+                          <th style={{ padding: '4px 8px' }}>Descripción</th>
+                          <th style={{ padding: '4px 8px', textAlign: 'center' }}>Cant.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cotizacionDetalle.items?.map((item, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '4px 8px' }}>{item.descripcion}</td>
+                            <td style={{ padding: '4px 8px', textAlign: 'center' }}>{item.cantidad}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', opacity: 0.8 }}>Condiciones y Notas:</h5>
+                  <div style={{ 
+                    fontSize: '0.8rem', 
+                    opacity: 0.7, 
+                    whiteSpace: 'pre-wrap', 
+                    maxHeight: '150px', 
+                    overflowY: 'auto',
+                    padding: '8px',
+                    background: 'rgba(0,0,0,0.2)',
+                    borderRadius: '4px'
+                  }}>
+                    {cotizacionDetalle.condiciones_notas || 'Sin notas adicionales.'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
