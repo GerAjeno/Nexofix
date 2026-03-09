@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Archive, ExternalLink, Filter, Printer } from 'lucide-react';
+import { Plus, Archive, Edit2, Filter, Printer } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 import TicketForm from '../components/TicketForm';
 import TicketPDF from '../components/TicketPDF';
@@ -134,7 +134,7 @@ export default function Tickets() {
                         <Printer size={18} />
                       </button>
                       <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
-                        <ExternalLink size={18} />
+                        <Edit2 size={18} />
                       </button>
                       <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
                         <Archive size={18} />
