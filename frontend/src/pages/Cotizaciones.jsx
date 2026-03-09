@@ -79,30 +79,29 @@ export default function Cotizaciones() {
                 <td>{cot.cliente_nombre || 'Cliente Desconocido'}</td>
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
                 <td style={{textAlign: 'right'}}>
-                  <button 
-                    onClick={() => handeOpenPdf(cot.id)} 
-                    className="btn-secondary" 
-                    style={{ marginRight: '8px' }} 
-                    title="Ver / Generar PDF"
-                  >
-                    <Printer size={18} />
-                  </button>
-                  <button 
-                    onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }} 
-                    className="btn-secondary" 
-                    style={{ marginRight: '8px' }} 
-                    title="Editar"
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(cot.id, cot.numero_cotizacion)} 
-                    className="btn-secondary" 
-                    style={{ color: 'var(--warning)', borderColor: 'transparent' }} 
-                    title="Archivar"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    <button 
+                      onClick={() => handeOpenPdf(cot.id)} 
+                      className="icon-btn" 
+                      title="Ver / Generar PDF"
+                    >
+                      <Printer size={18} />
+                    </button>
+                    <button 
+                      onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }} 
+                      className="icon-btn" 
+                      title="Editar"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(cot.id, cot.numero_cotizacion)} 
+                      className="icon-btn delete" 
+                      title="Archivar"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

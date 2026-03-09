@@ -130,15 +130,17 @@ export default function Tickets() {
                     <td>{getStatusBadge(ticket.estado)}</td>
                     <td>{getPriorityBadge(ticket.prioridad)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
-                        <Printer size={18} />
-                      </button>
-                      <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
-                        <Edit2 size={18} />
-                      </button>
-                      <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
-                        <Archive size={18} />
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
+                          <Printer size={18} />
+                        </button>
+                        <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
+                          <Edit2 size={18} />
+                        </button>
+                        <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
+                          <Archive size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
