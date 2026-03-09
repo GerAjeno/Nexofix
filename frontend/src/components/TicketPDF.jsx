@@ -96,34 +96,34 @@ export default function TicketPDF({ data, onClose }) {
                 </div>
               </div>
 
-              {/* Descripción del Requerimiento Original */}
-              <div style={{ marginBottom: '2rem' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
-                  Resumen del Requerimiento:
+              {/* Descripción del Requerimiento */}
+              <div style={{ marginBottom: '2.5rem' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                  Descripción del Trabajo Relizado / Requerimiento:
                 </h4>
-                <div style={{ padding: '8px 0', color: '#4b5563', whiteSpace: 'pre-wrap', fontSize: '13px' }}>
-                  {data.descripcion_problema}
+                <div style={{ padding: '10px 0', color: '#4b5563', whiteSpace: 'pre-wrap', minHeight: '80px' }}>
+                  {data.descripcion_problema || data.descripcion_cotizada}
                 </div>
               </div>
 
-              {/* Detalle de Ítems (Itemizado) */}
+              {/* Itemizado Técnico (Sin Precios) */}
               {data.items && data.items.length > 0 && (
-                <div style={{ marginBottom: '2rem' }}>
-                  <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
-                    Detalle de Ítems y Cantidades (Matriz de Trabajo):
+                <div style={{ marginBottom: '2.5rem' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                    Detalle de Ítems / Materiales Cotizados:
                   </h4>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px', fontSize: '13px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                     <thead>
-                      <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
-                        <th style={{ padding: '8px', textAlign: 'left', color: '#475569' }}>Descripción / Material / Servicio</th>
-                        <th style={{ padding: '8px', textAlign: 'center', color: '#475569', width: '120px' }}>Cantidad</th>
+                      <tr style={{ background: '#f1f5f9' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #e2e8f0', width: '70%' }}>Descripción del Item</th>
+                        <th style={{ padding: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>Cantidad</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.items.map((item, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                          <td style={{ padding: '8px', color: '#1e293b' }}>{item.descripcion}</td>
-                          <td style={{ padding: '8px', textAlign: 'center', color: '#1e293b' }}>{item.cantidad}</td>
+                      {data.items.map((item, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{item.descripcion}</td>
+                          <td style={{ padding: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>{item.cantidad}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -131,27 +131,27 @@ export default function TicketPDF({ data, onClose }) {
                 </div>
               )}
 
-              {/* Condiciones y Notas de la Cotización */}
-              {data.cotizacion_condiciones && (
-                <div style={{ marginBottom: '2.5rem' }}>
-                  <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
-                    Notas y Condiciones de la Cotización:
+              {/* Notas Técnicas / Observaciones */}
+              <div style={{ marginBottom: '2.5rem' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                  Notas Técnicas y Observaciones del Terreno:
+                </h4>
+                <div style={{ padding: '10px 0', color: '#4b5563', whiteSpace: 'pre-wrap', minHeight: '60px', fontStyle: 'italic' }}>
+                  {data.notas_tecnicas || 'Sin observaciones técnicas adicionales.'}
+                </div>
+              </div>
+
+              {/* Condiciones y Notas de Cotización */}
+              {data.condiciones_notas && (
+                <div style={{ marginBottom: '4rem' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                    Condiciones y Notas de Cotización:
                   </h4>
-                  <div style={{ padding: '10px', color: '#64748b', fontSize: '12px', background: '#f8fafc', borderRadius: '4px', fontStyle: 'italic', lineHeight: '1.4' }}>
-                    {data.cotizacion_condiciones}
+                  <div style={{ padding: '10px 0', color: '#6b7280', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+                    {data.condiciones_notas}
                   </div>
                 </div>
               )}
-
-              {/* Notas Técnicas / Observaciones de Terreno */}
-              <div style={{ marginBottom: '4rem' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
-                  Observaciones Técnicas de Terreno (A completar por técnico):
-                </h4>
-                <div style={{ padding: '10px 0', color: '#4b5563', whiteSpace: 'pre-wrap', minHeight: '60px', fontStyle: 'italic', borderBottom: '1px dashed #cbd5e1' }}>
-                  {data.notas_tecnicas || 'Espacio para observaciones adicionales durante la ejecución...'}
-                </div>
-              </div>
 
               {/* Cuadros de Firma */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', marginTop: '5rem' }}>
