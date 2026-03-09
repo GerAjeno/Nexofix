@@ -45,6 +45,7 @@ function initDb() {
         fecha_emision DATE,
         validez TEXT,
         tipo_trabajo TEXT,
+        estado TEXT DEFAULT 'Enviada', -- Enviada, En Proceso, Aceptada, Rechazada
         proyecto TEXT,
         direccion_trabajo TEXT,
         telefono_contacto TEXT,

@@ -26,6 +26,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     fecha_emision_formateada: new Date().toLocaleDateString('es-CL'),
     validez: '15 días corridos',
     tipo_trabajo: 'Corrientes Débiles',
+    estado: 'Enviada',
     proyecto: '',
     descripcion_trabajo: '',
     condiciones_notas: 'La forma de pago es adelantando el 50% al cerrar el trato y el otro 50% al terminar el trabajo. Los equipos y trabajo tienen una garantia legal de 1 año desde su instalacion',
@@ -424,6 +425,19 @@ export default function CotizacionForm({ onClose, onSave }) {
                   <option value="Soldadura">Soldadura</option>
                   <option value="Garantía">Garantía</option>
                   <option value="Otros">Otros</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ width: '180px', flexShrink: 0 }}>
+                <label className="form-label">Estado</label>
+                <select 
+                  className="form-control" 
+                  value={formData.estado}
+                  onChange={e => setFormData({...formData, estado: e.target.value})}
+                >
+                  <option value="Enviada">Enviada</option>
+                  <option value="En Proceso">En Proceso</option>
+                  <option value="Aceptada">Aceptada</option>
+                  <option value="Rechazada">Rechazada</option>
                 </select>
               </div>
             </div>
