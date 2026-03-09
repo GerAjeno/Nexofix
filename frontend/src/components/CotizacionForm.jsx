@@ -407,7 +407,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </select>
               </div>
               <div className="form-group" style={{ flex: 1, minWidth: '160px' }}>
-                <label className="form-label">Tipo de Trabajo</label>
+                <label className="form-label">Categoría</label>
                 <select 
                   className="form-control" 
                   value={formData.tipo_trabajo}
