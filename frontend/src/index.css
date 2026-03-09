@@ -454,6 +454,113 @@ body {
   transform: scale(1.002);
 }
 
+/* Agenda / Calendario */
+.agenda-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.calendar-filters {
+  display: flex;
+  gap: 1rem;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.calendar-day-head {
+  background: #111;
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.calendar-cell {
+  background: var(--card-bg);
+  min-height: 120px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.calendar-cell:hover {
+  background: #111;
+}
+
+.calendar-cell.other-month {
+  opacity: 0.3;
+  background: #050505;
+}
+
+.calendar-cell.today {
+  border: 1px solid var(--primary);
+  background: rgba(0, 210, 255, 0.05);
+}
+
+.day-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.calendar-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-event-badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-event-badge.manana {
+  border-left-color: #ffd700; /* Dorado para la mañana */
+  color: #fff;
+}
+
+.calendar-event-badge.tarde {
+  border-left-color: #ff8c00; /* Naranja para la tarde */
+  color: #fff;
+}
+
+.calendar-event-badge.sin-asignar {
+  border-left-color: #888;
+  color: #aaa;
+}
+
+@media (max-width: 768px) {
+  .calendar-cell {
+    min-height: 80px;
+    font-size: 0.7rem;
+  }
+}
+
 .badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
