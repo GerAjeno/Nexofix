@@ -82,7 +82,9 @@ export default function CotizacionForm({ onClose, onSave }) {
     let impuesto = 0;
     if (formData.tipo_impuesto === 'Factura (IVA 19%)') {
       impuesto = Math.round(montoNeto * 0.19);
-    } else if (formData.tipo_impuesto === 'Boleta (Honorarios 15.25%)') {
+    } else if (formData.tipo_impuesto.includes('Boleta')) {
+      // Para Boleta, el impuesto se calcula ítem por ítem en la visualización, 
+      // pero para el total final sumamos el 15.25% del neto tras descuento
       impuesto = Math.round(montoNeto * 0.1525);
     }
 
@@ -484,6 +486,9 @@ export default function CotizacionForm({ onClose, onSave }) {
                     <th style={{ width: '100px' }}>Cant.</th>
                     <th style={{ width: '150px' }}>Precio Unit. ($)</th>
                     <th style={{ width: '150px' }}>Total</th>
+                    {formData.tipo_impuesto.includes('Boleta') && (
+                      <th style={{ width: '150px' }}>Total Boleta</th>
+                    )}
                     <th style={{ width: '80px' }}></th>
                   </tr>
                 </thead>
@@ -519,9 +524,14 @@ export default function CotizacionForm({ onClose, onSave }) {
                           onChange={(e) => handleItemChange(index, 'precio_unitario', e.target.value)}
                         />
                       </td>
-                      <td style={{ padding: '0.5rem', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                      <td style={{ padding: '0.5rem', verticalAlign: 'middle', fontWeight: formData.tipo_impuesto.includes('Boleta') ? 'normal' : 'bold' }}>
                         ${(item.cantidad * item.precio_unitario).toLocaleString('es-CL')}
                       </td>
+                      {formData.tipo_impuesto.includes('Boleta') && (
+                        <td style={{ padding: '0.5rem', verticalAlign: 'middle', fontWeight: 'bold', color: 'var(--primary)' }}>
+                          ${Math.round((item.cantidad * item.precio_unitario) * 1.1525).toLocaleString('es-CL')}
+                        </td>
+                      )}
                       <td style={{ padding: '0.5rem', verticalAlign: 'middle', textAlign: 'center' }}>
                         <button 
                           type="button"

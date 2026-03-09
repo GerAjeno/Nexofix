@@ -32,6 +32,8 @@ export default function CotizacionPDF({ data, onClose }) {
     return `${day}/${month}/${year}`;
   };
 
+  const isBoleta = data.tipo_impuesto?.includes('Boleta');
+
   return (
     <div className="modal-overlay" style={{ zIndex: 100, overflowY: 'auto' }}>
       <div className="modal-content" style={{ maxWidth: '850px', backgroundColor: '#e2e8f0', padding: '1rem', borderRadius: '8px' }}>
@@ -115,9 +117,15 @@ export default function CotizacionPDF({ data, onClose }) {
                 <thead>
                   <tr style={{ backgroundColor: 'var(--primary)', color: '#ffffff' }}>
                     <th style={{ padding: '12px 15px', textAlign: 'left', borderTopLeftRadius: '4px' }}>Descripción</th>
-                    <th style={{ padding: '12px 15px', textAlign: 'center' }}>Cantidad</th>
-                    <th style={{ padding: '12px 15px', textAlign: 'right' }}>Precio Unitario</th>
-                    <th style={{ padding: '12px 15px', textAlign: 'right', borderTopRightRadius: '4px' }}>Total</th>
+                    <th style={{ padding: '12px 15px', textAlign: 'center', width: '80px' }}>Cant.</th>
+                    <th style={{ padding: '12px 15px', textAlign: 'right', width: '120px' }}>P. Neto</th>
+                    <th style={{ padding: '12px 15px', textAlign: 'right', width: '120px' }}>Total Neto</th>
+                    {isBoleta && (
+                      <th style={{ padding: '12px 15px', textAlign: 'right', width: '130px', borderTopRightRadius: '4px', backgroundColor: '#075985' }}>Total Boleta</th>
+                    )}
+                    {!isBoleta && (
+                      <th style={{ padding: '0', borderTopRightRadius: '4px', width: '0' }}></th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -126,14 +134,16 @@ export default function CotizacionPDF({ data, onClose }) {
                       <td style={{ padding: '12px 15px', color: '#4b5563' }}>{item.descripcion}</td>
                       <td style={{ padding: '12px 15px', textAlign: 'center', color: '#4b5563' }}>{item.cantidad}</td>
                       <td style={{ padding: '12px 15px', textAlign: 'right', color: '#4b5563' }}>{formatearDinero(item.precio_unitario)}</td>
-                      <td style={{ padding: '12px 15px', textAlign: 'right', color: '#1f2937', fontWeight: '500' }}>{formatearDinero(item.total)}</td>
+                      <td style={{ padding: '12px 15px', textAlign: 'right', color: isBoleta ? '#4b5563' : '#1f2937', fontWeight: isBoleta ? 'normal' : '500' }}>
+                        {formatearDinero(item.total)}
+                      </td>
+                      {isBoleta && (
+                        <td style={{ padding: '12px 15px', textAlign: 'right', color: '#1f2937', fontWeight: 'bold', backgroundColor: '#f0f9ff' }}>
+                          {formatearDinero(Math.round(item.total * 1.1525))}
+                        </td>
+                      )}
                     </tr>
                   ))}
-                  {(!data.items || data.items.length === 0) && (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: 'center', padding: '20px', color: '#9ca3af' }}>Sin detalles</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
 
@@ -141,7 +151,7 @@ export default function CotizacionPDF({ data, onClose }) {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '3rem' }}>
                 <div style={{ width: '40%' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#4b5563' }}>
-                    <span>Subtotal Servicios:</span>
+                    <span>{isBoleta ? 'Subtotal Neto:' : 'Subtotal Servicios:'}</span>
                     <span>{formatearDinero(data.subtotal)}</span>
                   </div>
                   {data.descuento_monto > 0 && (
