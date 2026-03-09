@@ -112,31 +112,6 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Dirección del Trabajo (*)</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Dirección donde se realiza el trabajo"
-                value={formData.direccion_trabajo}
-                onChange={e => setFormData({...formData, direccion_trabajo: e.target.value})}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="dashboard-grid" style={{ marginTop: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label">Teléfono de Contacto (*)</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Teléfono para coordinar"
-                value={formData.telefono_contacto}
-                onChange={e => setFormData({...formData, telefono_contacto: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
               <label className="form-label">Cotización Relacionada (Opcional)</label>
               <select 
                 className="form-control" 
@@ -164,6 +139,31 @@ export default function TicketForm({ ticket, onClose, onSave }) {
                   <option key={c.id} value={c.id}>{c.numero_cotizacion} - {c.proyecto}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="dashboard-grid" style={{ marginTop: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Dirección del Trabajo (*)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Dirección donde se realiza el trabajo"
+                value={formData.direccion_trabajo}
+                onChange={e => setFormData({...formData, direccion_trabajo: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Teléfono de Contacto (*)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Teléfono para coordinar"
+                value={formData.telefono_contacto}
+                onChange={e => setFormData({...formData, telefono_contacto: e.target.value})}
+                required
+              />
             </div>
           </div>
 
