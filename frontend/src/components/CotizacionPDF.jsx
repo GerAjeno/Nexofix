@@ -151,7 +151,7 @@ export default function CotizacionPDF({ data, onClose }) {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '3rem' }}>
                 <div style={{ width: '40%' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#4b5563' }}>
-                    <span>{isBoleta ? 'Subtotal Neto:' : 'Subtotal Servicios:'}</span>
+                    <span>{isBoleta ? 'Subtotal Bruto:' : 'Subtotal Servicios:'}</span>
                     <span>{formatearDinero(data.subtotal)}</span>
                   </div>
                   {data.descuento_monto > 0 && (
@@ -161,13 +161,13 @@ export default function CotizacionPDF({ data, onClose }) {
                     </div>
                   )}
                   {data.monto_impuesto > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#0284c7' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: isBoleta ? '#e11d48' : '#0284c7' }}>
                       <span>
                         {data.tipo_impuesto?.includes('Factura') ? 'IVA (19%)' : 
                          data.tipo_impuesto?.includes('Boleta') ? 'Retención (15.25%)' : 
                          'Impuesto'}:
                       </span>
-                      <span>+ {formatearDinero(data.monto_impuesto)}</span>
+                      <span>{isBoleta ? '-' : '+'} {formatearDinero(data.monto_impuesto)}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderTop: '2px solid #e5e7eb', marginTop: '10px', fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>

@@ -76,23 +76,31 @@ export default function CotizacionForm({ onClose, onSave }) {
     // Para evitar loops infinitos, esto se maneja con cuidado, pero calcular y sobreescribir totales es seguro así:
     // Cálculos de Totales
     const descMonto = Number(totales.descuento_monto) || 0;
-    const montoNeto = sub - descMonto;
     
-    // Cálculo de Impuesto
+    let subtotalCalculado = sub;
     let impuesto = 0;
-    if (formData.tipo_impuesto === 'Factura (IVA 19%)') {
-      impuesto = Math.round(montoNeto * 0.19);
-    } else if (formData.tipo_impuesto.includes('Boleta')) {
-      // Para Boleta, el impuesto se calcula ítem por ítem en la visualización, 
-      // pero para el total final sumamos el 15.25% del neto tras descuento
-      impuesto = Math.round(montoNeto * 0.1525);
-    }
+    let final = sub - descMonto;
 
-    const final = montoNeto + impuesto;
+    if (formData.tipo_impuesto === 'Factura (IVA 19%)') {
+      const montoNeto = sub - descMonto;
+      impuesto = Math.round(montoNeto * 0.19);
+      final = montoNeto + impuesto;
+    } else if (formData.tipo_impuesto.includes('Boleta')) {
+      // Nueva Lógica: El Subtotal es la suma de los "Total Boleta" de cada ítem
+      // Calculamos el subtotal bruto sumando (neto * 1.1525) de cada ítem
+      const subtotalBruto = items.reduce((acc, item) => acc + Math.round((item.cantidad * item.precio_unitario) * 1.1525), 0);
+      subtotalCalculado = subtotalBruto;
+      
+      const subtotalConDescuento = subtotalBruto - descMonto;
+      // La retención es el 15.25% del subtotal bruto con descuento
+      impuesto = Math.round(subtotalConDescuento * 0.1525);
+      // El total final es la resta
+      final = subtotalConDescuento - impuesto;
+    }
 
     setTotales(prev => ({
       ...prev,
-      subtotal: sub,
+      subtotal: subtotalCalculado,
       descuento_monto: descMonto,
       monto_impuesto: impuesto,
       total_final: final
