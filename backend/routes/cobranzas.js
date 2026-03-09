@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
   const sql = `
     SELECT cob.*, c.nombre as cliente_nombre, t.numero_ticket, t.tipo_trabajo, cot.proyecto as proyecto_nombre
     FROM cobranzas cob
-    JOIN clientes c ON cob.cliente_id = c.id
+    LEFT JOIN clientes c ON cob.cliente_id = c.id
     LEFT JOIN tickets t ON cob.ticket_id = t.id
     LEFT JOIN cotizaciones cot ON cob.cotizacion_id = cot.id
     WHERE cob.activo = 1

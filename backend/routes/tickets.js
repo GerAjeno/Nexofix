@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
   const sql = `
     SELECT t.*, c.nombre as cliente_nombre, cot.proyecto as proyecto_nombre
     FROM tickets t
-    JOIN clientes c ON t.cliente_id = c.id
+    LEFT JOIN clientes c ON t.cliente_id = c.id
     LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
     WHERE t.activo = 1
     ORDER BY t.id DESC
@@ -25,7 +25,7 @@ router.get('/:id', (req, res) => {
     SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
            cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion, t.tipo_trabajo
     FROM tickets t
-    JOIN clientes c ON t.cliente_id = c.id
+    LEFT JOIN clientes c ON t.cliente_id = c.id
     LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
     WHERE t.id = ?
   `;
@@ -57,6 +57,11 @@ router.get('/:id', (req, res) => {
 // POST crear nuevo ticket
 router.post('/', (req, res) => {
   const { 
+    cliente_id,
+    cotizacion_id,
+    direccion_trabajo,
+    telefono_contacto,
+    tipo_trabajo,
     estado, 
     prioridad, 
     descripcion_problema, 
