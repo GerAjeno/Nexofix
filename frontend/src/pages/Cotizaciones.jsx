@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Printer, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Printer, Edit2, CheckCircle } from 'lucide-react';
 import { cotizacionesService } from '../services/cotizacionesService';
 import CotizacionForm from '../components/CotizacionForm';
 import CotizacionPDF from '../components/CotizacionPDF';
@@ -30,6 +30,19 @@ export default function Cotizaciones() {
         loadCotizaciones();
       } catch(err) {
         alert('Error al archivar la cotización');
+      }
+    }
+  };
+
+  const handleAccept = async (id, numero) => {
+    if (window.confirm(`¿Aceptar la cotización ${numero}? Se creará automáticamente un Ticket de trabajo.`)) {
+      try {
+        await cotizacionesService.aceptar(id);
+        alert(`Cotización ${numero} aceptada. Se ha generado un nuevo ticket.`);
+        loadCotizaciones();
+      } catch (err) {
+        console.error(err);
+        alert('Error al aceptar la cotización');
       }
     }
   };
@@ -80,6 +93,14 @@ export default function Cotizaciones() {
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
                 <td style={{textAlign: 'right'}}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    <button 
+                      onClick={() => handleAccept(cot.id, cot.numero_cotizacion)} 
+                      className="icon-btn" 
+                      style={{ color: 'var(--success)' }}
+                      title="Aceptar Cotización (Crear Ticket)"
+                    >
+                      <CheckCircle size={18} />
+                    </button>
                     <button 
                       onClick={() => handeOpenPdf(cot.id)} 
                       className="icon-btn" 

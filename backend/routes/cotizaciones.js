@@ -158,6 +158,68 @@ router.put('/:id', (req, res) => {
   });
 });
 
+// POST aceptar cotización y crear ticket automáticamente
+router.post('/:id/aceptar', (req, res) => {
+  const { id } = req.params;
+  const fecha = new Date().toISOString().split('T')[0];
+  const numero_ticket = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+
+    // 1. Obtener datos de la cotización
+    db.get('SELECT * FROM cotizaciones WHERE id = ?', [id], (err, cot) => {
+      if (err || !cot) {
+        db.run('ROLLBACK');
+        return res.status(err ? 500 : 404).json({ error: err ? err.message : 'Cotización no encontrada' });
+      }
+
+      // 2. Actualizar estado de la cotización
+      db.run('UPDATE cotizaciones SET estado = "Aceptada", updated_at = CURRENT_TIMESTAMP WHERE id = ?', [id], (errUpd) => {
+        if (errUpd) {
+          db.run('ROLLBACK');
+          return res.status(500).json({ error: errUpd.message });
+        }
+
+        // 3. Crear el Ticket de trabajo asociado
+        const sqlInsertTicket = `
+          INSERT INTO tickets (
+            numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto, 
+            tipo_trabajo, fecha_creacion, estado, prioridad, descripcion_problema
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, "Pendiente", "Media", ?)
+        `;
+
+        const paramsTicket = [
+          numero_ticket,
+          cot.cliente_id,
+          cot.id,
+          cot.direccion_trabajo || '',
+          cot.telefono_contacto || '',
+          cot.tipo_trabajo || 'Corrientes Débiles',
+          fecha,
+          cot.descripcion_trabajo || ''
+        ];
+
+        db.run(sqlInsertTicket, paramsTicket, function(errTkt) {
+          if (errTkt) {
+            db.run('ROLLBACK');
+            return res.status(500).json({ error: errTkt.message });
+          }
+
+          db.run('COMMIT', (errCommit) => {
+            if (errCommit) return res.status(500).json({ error: errCommit.message });
+            res.json({ 
+              message: 'Cotización aceptada y Ticket generado', 
+              ticket_id: this.lastID,
+              numero_ticket 
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
 // DELETE (Borrado Suave / Archivar) cotización
 router.delete('/:id', (req, res) => {
   db.run('UPDATE cotizaciones SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {

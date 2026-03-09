@@ -26,5 +26,10 @@ export const cotizacionesService = {
   delete: async (id) => {
     const response = await axios.delete(`${API_URL}/${id}`);
     return response.data;
+  },
+
+  aceptar: async (id) => {
+    const response = await axios.post(`${API_URL}/${id}/aceptar`);
+    return response.data;
   }
 };
