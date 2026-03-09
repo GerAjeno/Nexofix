@@ -46,6 +46,8 @@ function initDb() {
         validez TEXT,
         tipo_trabajo TEXT,
         proyecto TEXT,
+        direccion_trabajo TEXT,
+        telefono_contacto TEXT,
         descripcion_trabajo TEXT,
         subtotal INTEGER,
         descuento_porcentaje INTEGER,

@@ -20,6 +20,8 @@ export default function CotizacionForm({ onClose, onSave }) {
   const [formData, setFormData] = useState({
     numero_cotizacion: '',
     cliente_id: '',
+    direccion_trabajo: '',
+    telefono_contacto: '',
     fecha_emision: new Date().toISOString().split('T')[0],
     fecha_emision_formateada: new Date().toLocaleDateString('es-CL'),
     validez: '15 días corridos',
@@ -326,7 +328,16 @@ export default function CotizacionForm({ onClose, onSave }) {
                 <select 
                   className="form-control" 
                   value={formData.cliente_id}
-                  onChange={e => setFormData({...formData, cliente_id: e.target.value})}
+                  onChange={e => {
+                    const clientId = e.target.value;
+                    const selectedClient = clientes.find(c => c.id == clientId);
+                    setFormData(prev => ({
+                      ...prev, 
+                      cliente_id: clientId,
+                      direccion_trabajo: selectedClient ? selectedClient.direccion : prev.direccion_trabajo,
+                      telefono_contacto: selectedClient ? selectedClient.telefono : prev.telefono_contacto
+                    }));
+                  }}
                   required
                 >
                   <option value="">Selecciona un cliente...</option>
@@ -334,6 +345,31 @@ export default function CotizacionForm({ onClose, onSave }) {
                     <option key={c.id} value={c.id}>{c.nombre} ({c.rut})</option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div className="form-group" style={{ flex: 1.5, minWidth: '300px' }}>
+                <label className="form-label">Dirección del Trabajo (*)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Calle, Número, Comuna"
+                  value={formData.direccion_trabajo}
+                  onChange={e => setFormData({...formData, direccion_trabajo: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group" style={{ flex: 1, minWidth: '200px' }}>
+                <label className="form-label">Teléfono de Contacto (*)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="+56 9 ..."
+                  value={formData.telefono_contacto}
+                  onChange={e => setFormData({...formData, telefono_contacto: e.target.value})}
+                  required
+                />
               </div>
             </div>
 

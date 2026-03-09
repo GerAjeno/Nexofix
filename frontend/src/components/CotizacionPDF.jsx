@@ -83,7 +83,8 @@ export default function CotizacionPDF({ data, onClose }) {
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#1f2937' }}>Cotizado a:</h3>
                   <div style={{ marginBottom: '4px' }}>Cliente: {data.cliente_nombre}</div>
                   <div style={{ marginBottom: '4px' }}>RUT: {data.cliente_rut}</div>
-                  <div style={{ marginBottom: '4px' }}>Dirección: {data.cliente_direccion || 'No registrada'}</div>
+                  <div style={{ marginBottom: '4px' }}>Dirección del Trabajo: {data.direccion_trabajo || data.cliente_direccion || 'No registrada'}</div>
+                  <div style={{ marginBottom: '4px' }}>Teléfono de Contacto: {data.telefono_contacto || 'No registrado'}</div>
                   {data.proyecto && <div style={{ marginBottom: '4px' }}>Proyecto: {data.proyecto}</div>}
                 </div>
                 <div style={{ textAlign: 'right' }}>
