@@ -48,9 +48,10 @@ export default function Cobranzas() {
   };
 
   const filtered = cobranzas.filter(c => {
-    const matchesSearch = c.numero_cobro.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         c.cliente_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         c.numero_ticket?.toLowerCase().includes(searchTerm.toLowerCase());
+    const s = searchTerm.toLowerCase();
+    const matchesSearch = (c.numero_cobro || '').toLowerCase().includes(s) || 
+                         (c.cliente_nombre || '').toLowerCase().includes(s) ||
+                         (c.numero_ticket || '').toLowerCase().includes(s);
     const matchesEstado = filterEstado === 'Todos' || c.estado === filterEstado;
     return matchesSearch && matchesEstado;
   });

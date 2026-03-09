@@ -106,9 +106,9 @@ router.post('/', (req, res) => {
 // PUT actualizar ticket
 router.put('/:id', (req, res) => {
   const { 
-    estado, prioridad, descripcion_problema, notas_tecnicas, 
+    estado, prioridad, descripcion_problema, notas_tecnicas,
     direccion_trabajo, telefono_contacto, tipo_trabajo,
-    jornada, fecha_agendada
+    jornada, fecha_agendada, fecha_termino
   } = req.body;
 
   // Lógica de agendamiento automático
@@ -121,24 +121,27 @@ router.put('/:id', (req, res) => {
     UPDATE tickets 
     SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, 
         direccion_trabajo = ?, telefono_contacto = ?, tipo_trabajo = ?,
-        jornada = ?, fecha_agendada = ?
+        jornada = ?, fecha_agendada = ?, fecha_termino = ?
     WHERE id = ?
   `;
   db.run(sql, [
     nuevoEstado, prioridad, descripcion_problema, notas_tecnicas, 
     direccion_trabajo, telefono_contacto, tipo_trabajo,
-    jornada, fecha_agendada,
+    jornada, fecha_agendada, fecha_termino,
     req.params.id
   ], async function(err) {
     if (err) return res.status(500).json({ error: err.message });
     
     // Automatización: Si pasa a Terminado, generar Cobranza
     if (nuevoEstado === 'Terminado' && this.changes > 0) {
+      console.log(`Iniciando generación automática de cobranza para ticket ${req.params.id}`);
       try {
         // Traer datos del ticket para el cobro
         const ticketSql = `SELECT * FROM tickets WHERE id = ?`;
         db.get(ticketSql, [req.params.id], (errT, ticket) => {
+          if (errT) console.error("Error al obtener ticket para cobranza:", errT);
           if (ticket) {
+            console.log(`Datos de ticket obtenidos para COB:`, ticket.numero_ticket);
             // Generar número de cobro COB-XXXXXX
             const numero_cobro = `COB-${Math.floor(100000 + Math.random() * 900000)}`;
             
@@ -146,24 +149,33 @@ router.put('/:id', (req, res) => {
             if (ticket.cotizacion_id) {
               const cotSql = `SELECT total_final FROM cotizaciones WHERE id = ?`;
               db.get(cotSql, [ticket.cotizacion_id], (errC, cot) => {
+                if (errC) console.error("Error al obtener cotización para cobranza:", errC);
                 const monto = cot ? cot.total_final : 0;
+                console.log(`Monto detectado para cobranza: ${monto}`);
                 const cobSql = `
                   INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, cotizacion_id, monto_total)
                   VALUES (?, ?, ?, ?, ?)
                 `;
-                db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id, ticket.cotizacion_id, monto]);
+                db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id, ticket.cotizacion_id, monto], (errCob) => {
+                   if (errCob) console.error("Error al insertar cobranza:", errCob);
+                   else console.log(`Cobranza ${numero_cobro} generada exitosamente.`);
+                });
               });
             } else {
+              console.log(`El ticket no tiene cotización asociada. Generando cobro con monto 0.`);
               const cobSql = `
                 INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, monto_total)
                 VALUES (?, ?, ?, 0)
               `;
-              db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id]);
+              db.run(cobSql, [numero_cobro, ticket.id, ticket.cliente_id], (errCob) => {
+                if (errCob) console.error("Error al insertar cobranza (sin cotizacion):", errCob);
+                else console.log(`Cobranza ${numero_cobro} generada exitosamente (monto 0).`);
+              });
             }
           }
         });
       } catch (e) {
-        console.error("Error generando cobranza automática:", e);
+        console.error("Error fatal en generación de cobranza:", e);
       }
     }
 
