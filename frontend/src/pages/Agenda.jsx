@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
+import TicketDetailModal from '../components/TicketDetailModal';
 
 export default function Agenda() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   // Opciones para Month/Year selectors
   const months = [
@@ -157,6 +160,8 @@ export default function Agenda() {
                   key={ticket.id} 
                   className={`calendar-event-badge ${ticket.jornada?.toLowerCase().replace(' ', '-')}`}
                   title={`${ticket.numero_ticket} - ${ticket.cliente_nombre}`}
+                  onClick={() => { setSelectedTicketId(ticket.id); setShowDetail(true); }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <strong>{ticket.jornada === 'Mañana' ? 'AM' : 'PM'}:</strong> {ticket.cliente_nombre}
                 </div>
@@ -165,6 +170,13 @@ export default function Agenda() {
           </div>
         ))}
       </div>
+
+      {showDetail && selectedTicketId && (
+        <TicketDetailModal 
+          ticketId={selectedTicketId} 
+          onClose={() => { setShowDetail(false); setSelectedTicketId(null); }} 
+        />
+      )}
     </div>
   );
 }
