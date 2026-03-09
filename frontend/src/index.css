@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  /* VARIABLES DEL TEMA CLARO */
-  --primary: #4361ee;
-  --primary-hover: #3a0ca3;
+  /* VARIABLES DEL TEMA CLARO - BASADAS EN EL LOGO */
+  --primary: #0072ff;       /* Azul Nexo */
+  --primary-hover: #0056b3;
   --bg-color: #f8f9fa;
   --card-bg: #ffffff;
   --text-main: #2b2d42;
@@ -16,21 +16,20 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
   
-  
   --radius-lg: 12px;
   --radius-full: 9999px;
   
-  --success: #10b981;
-  --warning: #f59e0b;
+  --success: #2ecc71;       /* Verde Nexo (Circuito) */
+  --warning: #f1c40f;       /* Amarillo Nexo (Rayo) */
   
-  --bg-gradient: radial-gradient(circle at top right, rgba(79, 172, 254, 0.03), transparent 40%),
-                 radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.03), transparent 40%);
+  --bg-gradient: radial-gradient(circle at top right, rgba(0, 114, 255, 0.03), transparent 40%),
+                 radial-gradient(circle at bottom left, rgba(46, 204, 113, 0.03), transparent 40%);
 }
 
 [data-theme="dark"] {
-  /* VARIABLES DEL TEMA OSCURO AMOLED TRUE BLACK */
-  --primary: #00f2fe;
-  --primary-hover: #4facfe;
+  /* VARIABLES DEL TEMA OSCURO AMOLED TRUE BLACK - BASADAS EN EL LOGO */
+  --primary: #3498db;       /* Azul Vibrante */
+  --primary-hover: #2980b9;
   --bg-color: #000000;      /* AMOLED Black */
   --card-bg: #0a0a0a;       /* Very dark gray for contrast */
   --text-main: #f8fafc;
@@ -40,13 +39,13 @@
   --sidebar-hover: rgba(255, 255, 255, 0.05);
   --modal-overlay: rgba(0,0,0,0.8);
   
-  --bg-gradient: none; /* No gradient by default to save OLED */
+  --bg-gradient: none;
   
   --shadow-sm: 0 4px 6px rgba(0,0,0,0.3);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
   
-  --success: #00f2fe; /* cian/azul vibrante */
-  --warning: #f59e0b;
+  --success: #2ecc71;       /* Verde Vibrante */
+  --warning: #f1c40f;       /* Amarillo Vibrante */
 }
 
 * {
@@ -101,7 +100,7 @@ body {
 .logo {
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--success) 50%, var(--warning) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

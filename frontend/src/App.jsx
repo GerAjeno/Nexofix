@@ -33,7 +33,10 @@ function App() {
             <button className="menu-btn" onClick={toggleSidebar}>
               <Menu size={24} />
             </button>
-            <h1 className="logo" style={{ fontSize: '1.5rem', marginBottom: 0 }}>NexoFix</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img src="/logo.png" alt="NexoFix Logo" style={{ height: '40px', width: 'auto' }} />
+              <h1 className="logo" style={{ fontSize: '1.5rem', marginBottom: 0 }}>NexoFix</h1>
+            </div>
           </div>
           
           <button onClick={toggleTheme} className="theme-toggle" title="Cambiar Tema">
