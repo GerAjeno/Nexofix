@@ -17,6 +17,11 @@ export const cotizacionesService = {
     const response = await axios.post(API_URL, cotizacionData);
     return response.data;
   },
+  
+  update: async (id, cotizacionData) => {
+    const response = await axios.put(`${API_URL}/${id}`, cotizacionData);
+    return response.data;
+  },
 
   delete: async (id) => {
     const response = await axios.delete(`${API_URL}/${id}`);

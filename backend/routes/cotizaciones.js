@@ -97,6 +97,67 @@ router.post('/', (req, res) => {
   });
 });
 
+// PUT actualizar cotización (Transacción con Ítems)
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { 
+    cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto, 
+    direccion_trabajo, telefono_contacto,
+    descripcion_trabajo, 
+    subtotal, descuento_porcentaje, descuento_monto, tipo_impuesto, monto_impuesto, total_final, 
+    condiciones_notas, items 
+  } = req.body;
+
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+
+    const sqlUpdateCotizacion = `
+      UPDATE cotizaciones SET 
+        cliente_id = ?, fecha_emision = ?, validez = ?, tipo_trabajo = ?, 
+        estado = ?, proyecto = ?, direccion_trabajo = ?, telefono_contacto = ?,
+        descripcion_trabajo = ?, subtotal = ?, descuento_porcentaje = ?, 
+        descuento_monto = ?, tipo_impuesto = ?, monto_impuesto = ?, 
+        total_final = ?, condiciones_notas = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `;
+
+    const params = [
+      cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto,
+      direccion_trabajo, telefono_contacto,
+      descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto,
+      tipo_impuesto, monto_impuesto, total_final, condiciones_notas, id
+    ];
+
+    db.run(sqlUpdateCotizacion, params, function(err) {
+      if (err) {
+        db.run('ROLLBACK');
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Eliminar ítems anteriores e insertar los nuevos
+      db.run('DELETE FROM cotizacion_items WHERE cotizacion_id = ?', [id], (errDel) => {
+        if (errDel) {
+          db.run('ROLLBACK');
+          return res.status(500).json({ error: errDel.message });
+        }
+
+        if (items && items.length > 0) {
+          const stmt = db.prepare('INSERT INTO cotizacion_items (cotizacion_id, descripcion, cantidad, precio_unitario, total) VALUES (?, ?, ?, ?, ?)');
+          for (const item of items) {
+            stmt.run([id, item.descripcion, item.cantidad, item.precio_unitario, item.total]);
+          }
+          stmt.finalize();
+        }
+
+        db.run('COMMIT', (errCommit) => {
+          if (errCommit) return res.status(500).json({ error: errCommit.message });
+          res.json({ message: 'Cotización actualizada exitosamente' });
+        });
+      });
+    });
+  });
+});
+
 // DELETE (Borrado Suave / Archivar) cotización
 router.delete('/:id', (req, res) => {
   db.run('UPDATE cotizaciones SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {

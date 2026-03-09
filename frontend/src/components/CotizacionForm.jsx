@@ -4,7 +4,7 @@ import { clientesService } from '../services/api';
 import { cotizacionesService } from '../services/cotizacionesService';
 import { plantillasService } from '../services/plantillasService';
 
-export default function CotizacionForm({ onClose, onSave }) {
+export default function CotizacionForm({ cotizacion, onClose, onSave }) {
   const [clientes, setClientes] = useState([]);
   const [plantillasDesc, setPlantillasDesc] = useState([]);
   const [plantillasCond, setPlantillasCond] = useState([]);
@@ -52,17 +52,59 @@ export default function CotizacionForm({ onClose, onSave }) {
     plantillasService.getItemizadosPresets().then(data => setPlantillasItems(data)).catch(err => console.error(err));
     
     // Asignar número base una vez abierto el modal
-    const hoy = new Date().toISOString().split('T')[0];
-    const [y, m, d] = hoy.split('-');
-    const hoyFormateado = `${d}/${m}/${y}`;
-    
-    setFormData(prev => ({
-      ...prev, 
-      numero_cotizacion: generarNumeroCotizacion(), // Keep original logic for generation
-      fecha_emision: hoy,
-      fecha_emision_formateada: hoyFormateado
-    }));
-  }, []);
+    if (!cotizacion) {
+      const hoy = new Date().toISOString().split('T')[0];
+      const [y, m, d] = hoy.split('-');
+      const hoyFormateado = `${d}/${m}/${y}`;
+      
+      setFormData(prev => ({
+        ...prev, 
+        numero_cotizacion: generarNumeroCotizacion(),
+        fecha_emision: hoy,
+        fecha_emision_formateada: hoyFormateado
+      }));
+    } else {
+      // Si estamos editando, cargar datos de la cotización y sus ítems
+      const loadDetails = async () => {
+        try {
+          const data = await cotizacionesService.getById(cotizacion.id);
+          setFormData({
+            numero_cotizacion: data.numero_cotizacion,
+            cliente_id: data.cliente_id,
+            direccion_trabajo: data.direccion_trabajo || '',
+            telefono_contacto: data.telefono_contacto || '',
+            fecha_emision: data.fecha_emision,
+            fecha_emision_formateada: new Date(data.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL'),
+            validez: data.validez,
+            tipo_trabajo: data.tipo_trabajo,
+            estado: data.estado || 'Enviada',
+            proyecto: data.proyecto || '',
+            descripcion_trabajo: data.descripcion_trabajo || '',
+            condiciones_notas: data.condiciones_notas || '',
+            tipo_impuesto: data.tipo_impuesto || 'Sin Impuesto'
+          });
+          if (data.items && data.items.length > 0) {
+            setItems(data.items.map(it => ({
+              descripcion: it.descripcion,
+              cantidad: it.cantidad,
+              precio_unitario: it.precio_unitario,
+              total: it.total
+            })));
+          }
+          setTotales({
+            subtotal: data.subtotal,
+            descuento_monto: data.descuento_monto,
+            monto_impuesto: data.monto_impuesto,
+            total_final: data.total_final
+          });
+        } catch (err) {
+          console.error('Error cargando detalle para editar:', err);
+          setError('No se pudo cargar el detalle de la cotización');
+        }
+      };
+      loadDetails();
+    }
+  }, [cotizacion]);
 
   // Calcular totales matemáticos en tiempo real cuando cambian los ítems o el descuento
   useEffect(() => {
@@ -225,7 +267,11 @@ export default function CotizacionForm({ onClose, onSave }) {
         items: itemsValidos
       };
       
-      await cotizacionesService.create(payload);
+      if (cotizacion) {
+        await cotizacionesService.update(cotizacion.id, payload);
+      } else {
+        await cotizacionesService.create(payload);
+      }
       onSave();
       onClose();
     } catch (err) {
@@ -304,7 +350,7 @@ export default function CotizacionForm({ onClose, onSave }) {
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: '900px' }}>
         <div className="modal-header">
-          <h3>Nueva Cotización</h3>
+          <h3>{cotizacion ? `Editar ${formData.numero_cotizacion}` : 'Nueva Cotización'}</h3>
           <button className="btn-close" onClick={onClose}><X size={24} /></button>
         </div>
         
@@ -407,7 +453,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </select>
               </div>
               <div className="form-group" style={{ flex: 1, minWidth: '160px' }}>
-                <label className="form-label">Categoría</label>
+                <label className="form-label">Tipo de Trabajo</label>
                 <select 
                   className="form-control" 
                   value={formData.tipo_trabajo}

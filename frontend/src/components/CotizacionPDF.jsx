@@ -98,7 +98,7 @@ export default function CotizacionPDF({ data, onClose }) {
                   </div>
                   {data.tipo_trabajo && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontWeight: 'bold', marginRight: '15px', color: '#4b5563' }}>Categoría:</span>
+                      <span style={{ fontWeight: 'bold', marginRight: '15px', color: '#4b5563' }}>Tipo de Trabajo:</span>
                       <span>{data.tipo_trabajo}</span>
                     </div>
                   )}

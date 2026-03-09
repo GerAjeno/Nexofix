@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Printer } from 'lucide-react';
+import { Plus, Trash2, Printer, Edit2 } from 'lucide-react';
 import { cotizacionesService } from '../services/cotizacionesService';
 import CotizacionForm from '../components/CotizacionForm';
 import CotizacionPDF from '../components/CotizacionPDF';
@@ -7,6 +7,7 @@ import CotizacionPDF from '../components/CotizacionPDF';
 export default function Cotizaciones() {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCotizacion, setSelectedCotizacion] = useState(null);
   const [pdfData, setPdfData] = useState(null);
 
   const loadCotizaciones = async () => {
@@ -51,7 +52,7 @@ export default function Cotizaciones() {
           <h2 className="page-title">Cotizaciones</h2>
           <p className="page-subtitle">Gestiona y genera presupuestos para tus clientes</p>
         </div>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>
+        <button className="btn-primary" onClick={() => { setSelectedCotizacion(null); setShowModal(true); }}>
           <Plus size={20} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
           Nueva Cotización
         </button>
@@ -87,6 +88,14 @@ export default function Cotizaciones() {
                     <Printer size={18} />
                   </button>
                   <button 
+                    onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }} 
+                    className="btn-secondary" 
+                    style={{ marginRight: '8px' }} 
+                    title="Editar"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button 
                     onClick={() => handleDelete(cot.id, cot.numero_cotizacion)} 
                     className="btn-secondary" 
                     style={{ color: 'var(--warning)', borderColor: 'transparent' }} 
@@ -108,7 +117,8 @@ export default function Cotizaciones() {
 
       {showModal && (
         <CotizacionForm 
-          onClose={() => setShowModal(false)} 
+          cotizacion={selectedCotizacion}
+          onClose={() => { setShowModal(false); setSelectedCotizacion(null); }} 
           onSave={loadCotizaciones}
         />
       )}

@@ -209,7 +209,7 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Categoría</label>
+              <label className="form-label">Tipo de Trabajo</label>
               <select 
                 className="form-control" 
                 value={formData.tipo_trabajo}

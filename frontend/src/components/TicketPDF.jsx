@@ -53,87 +53,107 @@ export default function TicketPDF({ data, onClose }) {
         <div style={{ margin: '0 auto', background: '#ffffff', width: '8.5in', minHeight: '11in', position: 'relative', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
           <div ref={printRef} style={{ width: '100%', minHeight: '11in', background: '#fff', color: '#333', fontFamily: '"Arial", sans-serif', fontSize: '14px', lineHeight: 1.5 }}>
             
-            {/* Header Estilo Imagen de Muestra */}
-            <div style={{ backgroundColor: '#10b981', padding: '1.5rem 3rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Header */}
+            <div style={{ background: 'linear-gradient(90deg, #007bff 0%, #28a745 100%)', padding: '1.5rem 2.5rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ width: '60px', height: '60px', backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
+                <div style={{ width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '32px', fontWeight: '500', letterSpacing: '0.5px' }}>NexoFix</h1>
-                  <div style={{ fontSize: '14px', opacity: 0.9, marginTop: '-5px' }}>Servicios Integrales</div>
+                  <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold' }}>NexoFix SpA</h1>
+                  <span style={{ fontSize: '12px', opacity: 0.9 }}>Orden de Trabajo Técnica</span>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '400', letterSpacing: '1px' }}>ORDEN DE TRABAJO</h2>
-                <div style={{ fontSize: '16px', opacity: 0.9 }}>N° TCK-{data.numero_ticket}</div>
+                <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'normal' }}>ORDEN DE TRABAJO</h2>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '4px' }}>N° {data.numero_ticket}</div>
               </div>
             </div>
 
             {/* Cuerpo del PDF */}
-            <div style={{ padding: '3rem' }}>
+            <div style={{ padding: '1.5rem 2.5rem' }}>
               
-              {/* Info Cliente y Detalles del Servicio */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '3rem', marginBottom: '1.5rem' }}>
+              {/* Info Cliente y Proyecto */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', borderLeft: '4px solid #007bff' }}>
                 <div>
-                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '18px', color: '#374151', fontWeight: '600' }}>Datos del Cliente:</h3>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Cliente: {data.cliente_nombre}</div>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>RUT: {data.cliente_rut}</div>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Dirección: {data.direccion_trabajo || data.cliente_direccion}</div>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Teléfono: {data.telefono_contacto || data.cliente_telefono}</div>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#007bff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <User size={16} /> Datos del Cliente
+                  </h3>
+                  <div style={{ marginBottom: '6px' }}><strong>Nombre:</strong> {data.cliente_nombre}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>RUT:</strong> {data.cliente_rut}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Teléfono:</strong> {data.telefono_contacto || data.cliente_telefono || 'No registrado'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Dirección:</strong> {data.direccion_trabajo || data.cliente_direccion || 'No registrada'}</div>
                 </div>
                 <div>
-                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '18px', color: '#374151', fontWeight: '600' }}>Detalles del Servicio:</h3>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Título: {data.proyecto_nombre || 'Servicio General'}</div>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Fecha Programada: {formatearFecha(data.fecha_creacion)}</div>
-                  <div style={{ marginBottom: '6px', color: '#4b5563' }}>Categoría: {data.tipo_trabajo || 'No especificada'}</div>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#007bff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText size={16} /> Detalles del Servicio
+                  </h3>
+                  <div style={{ marginBottom: '6px' }}><strong>Proyecto:</strong> {data.proyecto_nombre || 'Servicio General'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Tipo de Trabajo:</strong> {data.tipo_trabajo || 'No especificado'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Fecha Inicio:</strong> {formatearFecha(data.fecha_creacion)}</div>
                 </div>
               </div>
 
-              <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginBottom: '2.5rem' }} />
-
-              {/* Bitácora / Descripción */}
-              <div style={{ marginBottom: '3rem' }}>
-                <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '18px', color: '#374151', fontWeight: '600' }}>Bitácora Técnica / Descripción Tareas:</h3>
-                
-                <div style={{ color: '#4b5563', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+              {/* Descripción del Requerimiento */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                  Descripción del Trabajo Relizado / Requerimiento:
+                </h4>
+                <div style={{ padding: '10px 0', color: '#4b5563', whiteSpace: 'pre-wrap', minHeight: '80px' }}>
                   {data.descripcion_problema || data.descripcion_cotizada}
                 </div>
+              </div>
 
-                {/* Ítems como lista según imagen */}
-                {data.items && data.items.length > 0 && (
-                  <div style={{ marginBottom: '1.5rem', color: '#4b5563' }}>
-                    <div style={{ fontWeight: '500', marginBottom: '8px' }}>--- Materiales / Insumos Cotizados ---</div>
-                    {data.items.map((item, index) => (
-                      <div key={index} style={{ paddingLeft: '10px' }}>
-                        - {item.cantidad}x {item.descripcion}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Itemizado Técnico (Sin Precios) */}
+              {data.items && data.items.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                    Detalle de Ítems / Materiales Cotizados:
+                  </h4>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #e2e8f0', width: '70%' }}>Descripción del Item</th>
+                        <th style={{ padding: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>Cantidad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.items.map((item, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{item.descripcion}</td>
+                          <td style={{ padding: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>{item.cantidad}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-                <div style={{ color: '#4b5563' }}>
-                  <div style={{ fontWeight: '500', marginBottom: '8px' }}>--- PROBLEMA REPORTADO (Agenda) ---</div>
-                  <div style={{ paddingLeft: '10px' }}>{data.descripcion_problema || 'No especificado'}</div>
+              {/* Notas Técnicas / Observaciones */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', borderBottom: '2px solid #e2e8f0', paddingBottom: '5px', color: '#1f2937' }}>
+                  Notas Técnicas y Observaciones del Terreno:
+                </h4>
+                <div style={{ padding: '10px 0', color: '#4b5563', whiteSpace: 'pre-wrap', minHeight: '100px', fontStyle: 'italic' }}>
+                  {data.notas_tecnicas || ''}
                 </div>
               </div>
 
-              {/* Observaciones en Terreno */}
-              <div style={{ marginBottom: '5rem' }}>
-                <h3 style={{ margin: '0 0 1rem 0', fontSize: '18px', color: '#374151', fontWeight: '600' }}>Observaciones en Terreno (Llenar a mano):</h3>
-                <div style={{ 
-                  width: '100%', 
-                  height: '180px', 
-                  backgroundColor: '#f9fafb', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '4px' 
-                }}></div>
-              </div>
 
-              {/* Firma Cliente */}
-              <div style={{ marginTop: 'auto', textAlign: 'center', paddingTop: '4rem' }}>
-                <div style={{ width: '350px', margin: '0 auto', borderTop: '1px solid #9ca3af', paddingTop: '10px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Firma de Conformidad Cliente</div>
+
+              {/* Cuadros de Firma */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', marginTop: '3.5rem' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ borderTop: '1px solid #333', paddingTop: '10px' }}>
+                    <div style={{ fontWeight: 'bold' }}>Firma Técnico Responsable</div>
+                    <div style={{ fontSize: '12px' }}>NexoFix SpA</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ borderTop: '1px solid #333', paddingTop: '10px' }}>
+                    <div style={{ fontWeight: 'bold' }}>Firma del Cliente</div>
+                    <div style={{ fontSize: '12px' }}>Conformidad del Servicio</div>
+                  </div>
                 </div>
               </div>
 
