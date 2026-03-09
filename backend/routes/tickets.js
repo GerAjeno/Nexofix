@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const sql = `
     SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
-           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion, t.tipo_trabajo
+           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion, cot.condiciones_notas as cotizacion_condiciones, t.tipo_trabajo
     FROM tickets t
     JOIN clientes c ON t.cliente_id = c.id
     LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
@@ -32,7 +32,19 @@ router.get('/:id', (req, res) => {
   db.get(sql, [req.params.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Ticket no encontrado' });
-    res.json(row);
+    
+    // Si tiene cotización, buscar los ítems
+    if (row.cotizacion_id) {
+      const sqlItems = `SELECT descripcion, cantidad FROM cotizacion_items WHERE cotizacion_id = ?`;
+      db.all(sqlItems, [row.cotizacion_id], (errItems, items) => {
+        if (errItems) return res.status(500).json({ error: errItems.message });
+        row.items = items;
+        res.json(row);
+      });
+    } else {
+      row.items = [];
+      res.json(row);
+    }
   });
 });
 
