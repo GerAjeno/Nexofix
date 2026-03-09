@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Menu, Sun, Moon } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
@@ -16,7 +16,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 function AppLayout() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -50,9 +50,20 @@ function AppLayout() {
             <div style={{ display: 'none', '@media(minWidth: 768px)': { display: 'block' }, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               Acceso: <strong>{user.username}</strong>
             </div>
-            <button onClick={toggleTheme} className="theme-toggle" title="Cambiar Tema">
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button onClick={toggleTheme} className="theme-toggle" title="Cambiar Tema">
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button 
+                onClick={logout} 
+                className="theme-toggle" 
+                title="Cerrar Sesión"
+                style={{ color: '#e74c3c' }}
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
           </div>
         </header>
       )}
