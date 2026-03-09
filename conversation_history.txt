@@ -164,3 +164,37 @@ Abre de nuevo tu web local ([http://localhost:5173](http://localhost:5173)) y ve
 
 [08-03-2026 19:24:00] ASSISTANT: ¡Corregido! Fue un error de importación accidental en el Sidebar al cambiar el ícono de Tickets. Se restauró `react-router-dom` y la app ya carga con normalidad.
 
+[08-03-2026 20:30:15] USER: Al PDF de la cotizacion le falta el icono de la app y el nombre NexoFix SpA tiene las letras muy separadas
+
+[08-03-2026 20:35:10] ASSISTANT: He actualizado el PDF para incluir el logo oficial y ajustar la tipografía de "NexoFix SpA" (letter-spacing y line-height) para que se vea mucho más profesional.
+
+[08-03-2026 20:52:41] USER: Hay in problema con el icono de Nexofix, necesito que lo cambies por este otro en todas partes
+
+[08-03-2026 21:05:30] ASSISTANT: Logo actualizado en toda la aplicación (Header y PDF) con la nueva imagen corporativa `logo.png`.
+
+[08-03-2026 21:17:00] USER: En el PDF le pusiste un fondo blanco al Icono, quita ese fondo blanco y pon el icono mas grande
+
+[08-03-2026 21:20:15] ASSISTANT: Corregido. Eliminé el fondo blanco del contenedor del logo en el PDF y aumenté su tamaño a 100px para una mejor presencia.
+
+[08-03-2026 21:25:38] USER: En la cotizacion cuando uno elige el tipo de impuesto si es Factura o Boleta abajo del itemizado el nombre tambien Cambia de Factura o Boleta, quiero que si es Factura diga "IVA (19%)" y si es Boleta diga "Retención (15.25%)"
+
+[08-03-2026 21:28:40] ASSISTANT: Etiquetas personalizadas aplicadas. Ahora el sistema muestra explícitamente "IVA (19%)" o "Retención (15.25%)" según la selección, tanto en el formulario como en el PDF generado.
+
+[08-03-2026 22:00:44] USER: Al efectuar una cotización con boleta quiero que en el Itemizado se ponga otra columna llamada Total Boleta la cual sería el resultado del calculo del valor total del item más el impuesto de 15,25% y el calculo final se haga con los valores de esta columna, en el caso de las cotizaciones con factura tienen que seguir calculándose como se calculan hasta ahora, con la columna Total y no debe aparecer la columna Total Boleta
+
+[08-03-2026 22:05:12] ASSISTANT: Columna "Total Boleta" implementada. Ahora, al seleccionar Boleta, cada ítem muestra su valor con el 15.25% incluido. Los totales también se sincronizaron con esta nueva columna dinámica.
+
+[08-03-2026 22:12:27] USER: Quiero que al calcular el impuesto al hacer las cotizaciones con Boleta, el subtotal sea la suma de la columna Total Boleta, después en el apartado Retención (15,25%) se calcule el impuesto del 15,25% del subtotal y en Total Final sea la resta del Subtotal menos el impuesto del 15,25%
+
+[08-03-2026 22:15:30] ASSISTANT: Nueva lógica contable para boletas aplicada: Subtotal Bruto (Suma de Total Boleta) - Retención (15.25%) = Total Líquido. Se reflejó tanto en el formulario como en el PDF.
+
+[08-03-2026 22:18:54] USER: Quiero que al calcular el impuesto al hacer las cotizaciones con Boleta, en el calculo final donde aparece Retención (15,25%) el impuesto se resta, por ende el monto debe tener un signo – en vez de un signo +
+
+[08-03-2026 22:20:15] ASSISTANT: Signo de retención actualizado a negativo (-) en el formulario para mayor claridad visual sobre la deducción.
+
+[08-03-2026 22:24:56] USER: en el apartado de Cotizaciones en el listado de estas, quiero que aparezca la columna Proyecto entre Fecha y Cliente
+
+[08-03-2026 22:26:40] ASSISTANT: Columna "Proyecto" integrada en el listado de cotizaciones, ubicada entre Fecha y Cliente para una mejor organización.
+
+[08-03-2026 22:27:14] USER: no haz escrito nada en el archivo conversation_history.txt
+

@@ -4,3 +4,15 @@
 - Inicialización de nuevo log `changelog.txt`.
 - Inicialización de nuevo log `conversation_history.txt`.
 - Cambio de arquitectura de Firebase (servicios cloud) a una estructura local completa (Express.js, base de datos SQLite y File System en servidor Ubuntu).
+
+## [08-03-2026 22:30:00]
+- **Identidad Visual**: Implementación de colores corporativos (Azul, Verde, Amarillo) y logo oficial `logo.png`.
+- **Base de Datos**: Corrección de esquema y adición de columnas `tipo_trabajo`, `tipo_impuesto`, `monto_impuesto`, `descuento_monto` y sistema de `activo (soft-delete)`.
+- **Módulo de Cotizaciones**: 
+  - Rediseño de PDF con logo oficial, tipografía mejorada y colores de marca.
+  - Personalización de etiquetas: "IVA (19%)" y "Retención (15.25%)".
+  - Implementación de columna dinámica "Total Boleta" e itemizado con impuesto incluido.
+  - Nueva lógica contable para Boletas: Subtotal Bruto - Retención = Total Líquido.
+  - Ajustes de UI: Columna "Proyecto" en listado principal y signos de visualización correctos en el resumen de totales.
+- **Módulo de Clientes**: Validación algorítmica de RUT con auto-formateo y lógica de reactivación de clientes archivados.
+- **General**: Implementación de Modo Oscuro "True Black" para pantallas OLED/AMOLED y personalización de barra de scroll.
