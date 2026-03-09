@@ -198,3 +198,16 @@ Abre de nuevo tu web local ([http://localhost:5173](http://localhost:5173)) y ve
 
 [08-03-2026 22:27:14] USER: no haz escrito nada en el archivo conversation_history.txt
 
+[2026-03-09]
+- Corregido error en CobranzaPDF.jsx (importación de hooks de React).
+- Implementado botón "Terminar Trabajo" en el listado de Tickets (acceso directo a cierre).
+- Implementado botón "Ver Detalle" en el listado de Tickets.
+- Creado sistema de Registro de Pagos Detallado (Fecha, Medio de Pago, Notas/Referencias).
+- Actualizado esquema de BD para trazabilidad financiera (fecha_pago, metodo_pago, notas_pago).
+- Evolucionado Dashboard a "Centro de Mando" con KPIs reales:
+  * Total Clientes.
+  * Pendiente de Cobro y Cash Flow Realizado.
+  * Tickets Activos (Pendiente/Proceso).
+  * Agenda Inmediata (Top 5 próximos trabajos).
+  * Actividad Financiera Reciente.
+- Creado endpoint analítico /api/dashboard/stats.

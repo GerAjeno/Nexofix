@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Menu, Sun, Moon } from 'lucide-react';
 import Sidebar from './components/Sidebar';
@@ -8,10 +8,15 @@ import Cotizaciones from './pages/Cotizaciones';
 import Tickets from './pages/Tickets';
 import Agenda from './pages/Agenda';
 import Cobranzas from './pages/Cobranzas';
+import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 
-function App() {
+// Componente Wrapper para condicionalmente renderizar Layout
+function AppLayout() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -27,9 +32,9 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="app-container">
-        {/* Cabecera Universal (Siempre visible) */}
+    <div className="app-container">
+      {/* Cabecera Universal (Siempre visible solo si está logueado) */}
+      {user && (
         <header className="app-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button className="menu-btn" onClick={toggleSidebar}>
@@ -41,40 +46,59 @@ function App() {
             </div>
           </div>
           
-          <button onClick={toggleTheme} className="theme-toggle" title="Cambiar Tema">
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'none', '@media(minWidth: 768px)': { display: 'block' }, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              Acceso: <strong>{user.username}</strong>
+            </div>
+            <button onClick={toggleTheme} className="theme-toggle" title="Cambiar Tema">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
         </header>
+      )}
 
-        <div className="app-body">
-          {/* Overlay para móviles */}
-          {isSidebarOpen && window.innerWidth <= 768 && (
-            <div className="sidebar-overlay" onClick={toggleSidebar}></div>
-          )}
+      <div className="app-body">
+        {/* Overlay para móviles */}
+        {isSidebarOpen && window.innerWidth <= 768 && user && (
+          <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+        )}
 
+        {user && (
           <Sidebar 
             theme={theme} 
             toggleTheme={toggleTheme} 
             isOpen={isSidebarOpen} 
             onClose={() => setIsSidebarOpen(false)} 
           />
+        )}
 
-          <div className="main-layout">
-            <main className="main-content">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/clientes" element={<Clientes />} />
-                <Route path="/cotizaciones" element={<Cotizaciones />} />
-                <Route path="/tickets" element={<Tickets />} />
-                <Route path="/agenda" element={<Agenda />} />
-                <Route path="/cobranzas" element={<Cobranzas />} />
-              </Routes>
-            </main>
-          </div>
+        <div className={user ? "main-layout" : ""} style={{ width: '100%' }}>
+          <main className={user ? "main-content" : ""} style={{ minHeight: '100vh', padding: user ? undefined : 0, transition: 'none' }}>
+            <Routes>
+              {/* Ruta Pública */}
+              <Route path="/login" element={<Login />} />
+
+              {/* Rutas Protegidas */}
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
+              <Route path="/cotizaciones" element={<ProtectedRoute><Cotizaciones /></ProtectedRoute>} />
+              <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
+              <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
+              <Route path="/cobranzas" element={<ProtectedRoute><Cobranzas /></ProtectedRoute>} />
+            </Routes>
+          </main>
         </div>
       </div>
-    </Router>
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppLayout />
+      </Router>
+    </AuthProvider>
+  );
+}
