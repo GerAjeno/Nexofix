@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { DollarSign, Search, FileText, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { cobranzasService } from '../services/cobranzasService';
 import CobranzaPDF from '../components/CobranzaPDF';
+import PaymentModal from '../components/PaymentModal';
 
 export default function Cobranzas() {
   const [cobranzas, setCobranzas] = useState([]);
@@ -10,6 +11,10 @@ export default function Cobranzas() {
   const [filterEstado, setFilterEstado] = useState('Todos');
   const [showPDF, setShowPDF] = useState(false);
   const [selectedCobranzaId, setSelectedCobranzaId] = useState(null);
+  
+  // Estados para Registro de Pago
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedForPayment, setSelectedForPayment] = useState(null);
 
   const fetchCobranzas = async () => {
     try {
@@ -149,7 +154,10 @@ export default function Cobranzas() {
                             <FileText size={18} />
                           </button>
                           {cob.estado === 'En Cobro' && (
-                            <button className="icon-btn" title="Marcar como Cobrado" onClick={() => handleUpdateEstado(cob.id, 'Cobrado')} style={{ color: '#28a745' }}>
+                            <button className="icon-btn" title="Marcar como Cobrado" onClick={() => {
+                              setSelectedForPayment(cob);
+                              setShowPaymentModal(true);
+                            }} style={{ color: '#28a745' }}>
                               <CheckCircle size={18} />
                             </button>
                           )}
@@ -177,6 +185,18 @@ export default function Cobranzas() {
         <CobranzaPDF 
           cobranzaId={selectedCobranzaId} 
           onClose={() => { setShowPDF(false); setSelectedCobranzaId(null); }} 
+        />
+      )}
+
+      {showPaymentModal && selectedForPayment && (
+        <PaymentModal 
+          cobranza={selectedForPayment}
+          onClose={() => { setShowPaymentModal(false); setSelectedForPayment(null); }}
+          onSave={() => {
+            setShowPaymentModal(false);
+            setSelectedForPayment(null);
+            fetchCobranzas();
+          }}
         />
       )}
     </div>

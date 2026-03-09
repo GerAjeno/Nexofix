@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Download, MapPin, Phone, User, Calendar, FileText, DollarSign, ClipboardCheck } from 'lucide-react';
+import { Download, MapPin, Phone, User, Calendar, FileText, DollarSign, ClipboardCheck, CheckCircle } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 
 export default function CobranzaPDF({ cobranzaId, onClose }) {
@@ -162,6 +162,27 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
                   <span>{formatCLP(data.total_final)}</span>
                 </div>
               </div>
+
+              {/* Comprobante de Pago (Solo si está Cobrado) */}
+              {data.estado === 'Cobrado' && (
+                <div style={{ marginTop: '2rem', padding: '1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
+                  <h4 style={{ margin: '0 0 10px 0', color: '#166534', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={16} /> COMPROBANTE DE PAGO RECEPTADO
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '12px' }}>
+                    <div>
+                      <div><strong>Fecha de Pago:</strong> {data.fecha_pago}</div>
+                      <div><strong>Medio de Pago:</strong> {data.metodo_pago}</div>
+                    </div>
+                    {data.notas_pago && (
+                      <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: '1rem' }}>
+                        <strong>Referencias:</strong><br />
+                        <span style={{ fontSize: '11px', opacity: 0.8 }}>{data.notas_pago}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Pie de Firma */}
               <div style={{ marginTop: '3rem', borderTop: '1px dashed #cbd5e1', paddingTop: '1.5rem', textAlign: 'center' }}>

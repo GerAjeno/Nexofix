@@ -50,11 +50,20 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// PUT actualizar estado de cobranza
+// PUT actualizar cobranza (incluye registro de pago)
 router.put('/:id', (req, res) => {
-  const { estado } = req.body;
-  const sql = `UPDATE cobranzas SET estado = ? WHERE id = ?`;
-  db.run(sql, [estado, req.params.id], function(err) {
+  const { estado, fecha_pago, metodo_pago, notas_pago } = req.body;
+  
+  const sql = `
+    UPDATE cobranzas 
+    SET estado = ?, 
+        fecha_pago = ?, 
+        metodo_pago = ?, 
+        notas_pago = ? 
+    WHERE id = ?
+  `;
+  
+  db.run(sql, [estado, fecha_pago, metodo_pago, notas_pago, req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ updated: this.changes });
   });
