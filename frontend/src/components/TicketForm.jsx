@@ -10,6 +10,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
   const [formData, setFormData] = useState({
     cliente_id: '',
     cotizacion_id: '',
+    direccion_trabajo: '',
+    telefono_contacto: '',
     estado: 'Pendiente',
     prioridad: 'Media',
     descripcion_problema: '',
@@ -38,6 +40,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
       setFormData({
         cliente_id: ticket.cliente_id,
         cotizacion_id: ticket.cotizacion_id || '',
+        direccion_trabajo: ticket.direccion_trabajo || '',
+        telefono_contacto: ticket.telefono_contacto || '',
         estado: ticket.estado,
         prioridad: ticket.prioridad,
         descripcion_problema: ticket.descripcion_problema,
@@ -87,7 +91,17 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               <select 
                 className="form-control" 
                 value={formData.cliente_id}
-                onChange={e => setFormData({...formData, cliente_id: e.target.value})}
+                onChange={e => {
+                  const clientId = e.target.value;
+                  const selectedClient = clientes.find(c => c.id == clientId);
+                  setFormData(prev => ({
+                    ...prev, 
+                    cliente_id: clientId,
+                    // Inicializar con datos del cliente
+                    direccion_trabajo: selectedClient ? selectedClient.direccion : prev.direccion_trabajo,
+                    telefono_contacto: selectedClient ? selectedClient.telefono : prev.telefono_contacto
+                  }));
+                }}
                 required
                 disabled={!!ticket}
               >
@@ -96,6 +110,31 @@ export default function TicketForm({ ticket, onClose, onSave }) {
                   <option key={c.id} value={c.id}>{c.nombre} ({c.rut})</option>
                 ))}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Dirección del Trabajo (*)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Dirección donde se realiza el trabajo"
+                value={formData.direccion_trabajo}
+                onChange={e => setFormData({...formData, direccion_trabajo: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="dashboard-grid" style={{ marginTop: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Teléfono de Contacto (*)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Teléfono para coordinar"
+                value={formData.telefono_contacto}
+                onChange={e => setFormData({...formData, telefono_contacto: e.target.value})}
+                required
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Cotización Relacionada (Opcional)</label>
@@ -109,6 +148,9 @@ export default function TicketForm({ ticket, onClose, onSave }) {
                   setFormData(prev => ({
                     ...prev, 
                     cotizacion_id: cotId,
+                    // Priorizar dirección y teléfono de la cotización si existe
+                    direccion_trabajo: selectedCot ? (selectedCot.direccion_trabajo || prev.direccion_trabajo) : prev.direccion_trabajo,
+                    telefono_contacto: selectedCot ? (selectedCot.telefono_contacto || prev.telefono_contacto) : prev.telefono_contacto,
                     // Auto-completar descripción si está vacía
                     descripcion_problema: (prev.descripcion_problema === '' && selectedCot) 
                       ? selectedCot.descripcion_trabajo 

@@ -81,8 +81,8 @@ export default function TicketPDF({ data, onClose }) {
                   </h3>
                   <div style={{ marginBottom: '6px' }}><strong>Nombre:</strong> {data.cliente_nombre}</div>
                   <div style={{ marginBottom: '6px' }}><strong>RUT:</strong> {data.cliente_rut}</div>
-                  <div style={{ marginBottom: '6px' }}><strong>Teléfono:</strong> {data.cliente_telefono || 'No registrado'}</div>
-                  <div style={{ marginBottom: '6px' }}><strong>Dirección:</strong> {data.cliente_direccion || 'No registrada'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Teléfono:</strong> {data.telefono_contacto || data.cliente_telefono || 'No registrado'}</div>
+                  <div style={{ marginBottom: '6px' }}><strong>Dirección:</strong> {data.direccion_trabajo || data.cliente_direccion || 'No registrada'}</div>
                 </div>
                 <div>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#007bff', display: 'flex', alignItems: 'center', gap: '8px' }}>

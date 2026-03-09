@@ -94,6 +94,8 @@ function initDb() {
         numero_ticket TEXT UNIQUE,
         cliente_id INTEGER,
         cotizacion_id INTEGER,
+        direccion_trabajo TEXT,
+        telefono_contacto TEXT,
         fecha_creacion TEXT DEFAULT (DATE('now')),
         estado TEXT DEFAULT 'Pendiente', -- 'Pendiente', 'En Proceso', 'Terminado', 'Cancelado'
         prioridad TEXT DEFAULT 'Media', -- 'Baja', 'Media', 'Alta'

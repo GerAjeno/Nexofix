@@ -41,6 +41,8 @@ router.post('/', (req, res) => {
   const { 
     cliente_id, 
     cotizacion_id, 
+    direccion_trabajo,
+    telefono_contacto,
     estado, 
     prioridad, 
     descripcion_problema, 
@@ -53,15 +55,17 @@ router.post('/', (req, res) => {
 
   const sql = `
     INSERT INTO tickets (
-      numero_ticket, cliente_id, cotizacion_id, fecha_creacion, 
-      estado, prioridad, descripcion_problema, notas_tecnicas
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto,
+      fecha_creacion, estado, prioridad, descripcion_problema, notas_tecnicas
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(sql, [
     numero_ticket, 
     cliente_id, 
     cotizacion_id || null, 
+    direccion_trabajo,
+    telefono_contacto,
     fecha, 
     estado || 'Pendiente', 
     prioridad || 'Media', 
@@ -75,13 +79,13 @@ router.post('/', (req, res) => {
 
 // PUT actualizar ticket
 router.put('/:id', (req, res) => {
-  const { estado, prioridad, descripcion_problema, notas_tecnicas } = req.body;
+  const { estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto } = req.body;
   const sql = `
     UPDATE tickets 
-    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?
+    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, direccion_trabajo = ?, telefono_contacto = ?
     WHERE id = ?
   `;
-  db.run(sql, [estado, prioridad, descripcion_problema, notas_tecnicas, req.params.id], function(err) {
+  db.run(sql, [estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ updated: this.changes });
   });
