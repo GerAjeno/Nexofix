@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Archive, Edit2, Filter, Printer } from 'lucide-react';
+import { Plus, Trash2, Printer, Edit2, Archive, Calendar } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 import TicketForm from '../components/TicketForm';
 import TicketPDF from '../components/TicketPDF';
+import ScheduleModal from '../components/ScheduleModal';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
@@ -10,6 +11,8 @@ export default function Tickets() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [pdfData, setPdfData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedForSchedule, setSelectedForSchedule] = useState(null);
 
   const fetchTickets = async () => {
     try {
@@ -48,9 +51,9 @@ export default function Tickets() {
   };
   const getStatusBadge = (estado) => {
     const styles = {
-      'Pendiente': { bg: 'rgba(255, 193, 7, 0.2)', color: '#ffc107' }, // Amarillo NexoFix
-      'En Proceso': { bg: 'rgba(0, 123, 255, 0.2)', color: '#007bff' }, // Azul NexoFix
-      'Terminado': { bg: 'rgba(40, 167, 69, 0.2)', color: '#28a745' },  // Verde NexoFix
+      'Pendiente': { bg: 'rgba(255, 193, 7, 0.2)', color: '#ffc107' }, // Amarillo
+      'En Proceso': { bg: 'rgba(40, 167, 69, 0.2)', color: '#28a745' }, // Verde (Solicitado)
+      'Terminado': { bg: 'rgba(0, 123, 255, 0.2)', color: '#007bff' },  // Azul
       'Cancelado': { bg: 'rgba(220, 53, 69, 0.2)', color: '#dc3545' }
     };
     const style = styles[estado] || { bg: '#f3f4f6', color: '#374151' };
@@ -134,6 +137,9 @@ export default function Tickets() {
                         <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
                           <Printer size={18} />
                         </button>
+                        <button className="icon-btn" title="Agendar Trabajo" onClick={() => { setSelectedForSchedule(ticket); setShowScheduleModal(true); }}>
+                          <Calendar size={18} style={{ color: 'var(--primary)' }} />
+                        </button>
                         <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
                           <Edit2 size={18} />
                         </button>
@@ -168,6 +174,14 @@ export default function Tickets() {
         <TicketPDF 
           data={pdfData} 
           onClose={() => setPdfData(null)} 
+        />
+      )}
+
+      {showScheduleModal && selectedForSchedule && (
+        <ScheduleModal 
+          ticket={selectedForSchedule} 
+          onClose={() => { setShowScheduleModal(false); setSelectedForSchedule(null); }} 
+          onSave={fetchTickets} 
         />
       )}
     </div>
