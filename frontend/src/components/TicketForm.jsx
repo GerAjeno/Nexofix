@@ -80,10 +80,32 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     loadCotizacionDetalle();
   }, [formData.cotizacion_id]);
 
+  const handleDateChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Solo números
+    if (value.length > 8) value = value.slice(0, 8);
+    
+    // Aplicar máscara DD/MM/AAAA
+    let formatted = value;
+    if (value.length > 4) {
+      formatted = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+    } else if (value.length > 2) {
+      formatted = `${value.slice(0, 2)}/${value.slice(2)}`;
+    }
+    
+    setFormData({ ...formData, fecha_agendada: formatted });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+
+    // Validación básica de formato DD/MM/AAAA si hay jornada
+    if (formData.jornada !== 'Sin Asignar' && !/^\d{2}\/\d{2}\/\d{4}$/.test(formData.fecha_agendada)) {
+      setError('El formato de fecha debe ser DD/MM/AAAA');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       if (ticket) {
@@ -266,14 +288,16 @@ export default function TicketForm({ ticket, onClose, onSave }) {
           {/* Fecha Agendada Condicional */}
           {formData.jornada !== 'Sin Asignar' && (
             <div className="form-group" style={{ marginTop: '1rem' }}>
-              <label className="form-label" style={{ color: 'var(--primary)' }}>Fecha Agendada (*)</label>
+              <label className="form-label" style={{ color: 'var(--primary)' }}>Fecha Agendada (DD/MM/AAAA) (*)</label>
               <input 
-                type="date" 
+                type="text" 
                 className="form-control" 
+                placeholder="Ej: 31/12/2025"
                 value={formData.fecha_agendada}
-                onChange={e => setFormData({...formData, fecha_agendada: e.target.value})}
+                onChange={handleDateChange}
+                maxLength="10"
                 required
-                style={{ borderColor: 'var(--primary)' }}
+                style={{ borderColor: 'var(--primary)', letterSpacing: '1px' }}
               />
             </div>
           )}
