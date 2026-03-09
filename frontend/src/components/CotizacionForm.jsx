@@ -3,12 +3,14 @@ import { X, Plus, Trash2, Save, FileSpreadsheet } from 'lucide-react';
 import { clientesService } from '../services/api';
 import { cotizacionesService } from '../services/cotizacionesService';
 import { plantillasService } from '../services/plantillasService';
+import { getAjustesGenerales } from '../services/ajustesService';
 
 export default function CotizacionForm({ cotizacion, onClose, onSave }) {
   const [clientes, setClientes] = useState([]);
   const [plantillasDesc, setPlantillasDesc] = useState([]);
   const [plantillasCond, setPlantillasCond] = useState([]);
   const [plantillasItems, setPlantillasItems] = useState([]);
+  const [ajustes, setAjustes] = useState({ impuesto_iva: 19, impuesto_boleta: 15.25 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -50,6 +52,11 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
     plantillasService.getTextos('descripcion').then(data => setPlantillasDesc(data)).catch(err => console.error(err));
     plantillasService.getTextos('condiciones').then(data => setPlantillasCond(data)).catch(err => console.error(err));
     plantillasService.getItemizadosPresets().then(data => setPlantillasItems(data)).catch(err => console.error(err));
+    getAjustesGenerales().then(data => {
+      if(data.impuesto_iva) {
+        setAjustes(data);
+      }
+    }).catch(err => console.error("Error cargando ajustes", err));
     
     // Asignar número base una vez abierto el modal
     if (!cotizacion) {
@@ -126,20 +133,18 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
     let impuesto = 0;
     let final = sub - descMonto;
 
-    if (formData.tipo_impuesto === 'Factura (IVA 19%)') {
+    if (formData.tipo_impuesto?.includes('Factura')) {
       const montoNeto = sub - descMonto;
-      impuesto = Math.round(montoNeto * 0.19);
+      impuesto = Math.round(montoNeto * (ajustes.impuesto_iva / 100));
       final = montoNeto + impuesto;
-    } else if (formData.tipo_impuesto.includes('Boleta')) {
+    } else if (formData.tipo_impuesto?.includes('Boleta')) {
       // Nueva Lógica: El Subtotal es la suma de los "Total Boleta" de cada ítem
-      // Calculamos el subtotal bruto sumando (neto * 1.1525) de cada ítem
-      const subtotalBruto = items.reduce((acc, item) => acc + Math.round((item.cantidad * item.precio_unitario) * 1.1525), 0);
+      const factorBruto = 1 + (ajustes.impuesto_boleta / 100);
+      const subtotalBruto = items.reduce((acc, item) => acc + Math.round((item.cantidad * item.precio_unitario) * factorBruto), 0);
       subtotalCalculado = subtotalBruto;
       
       const subtotalConDescuento = subtotalBruto - descMonto;
-      // La retención es el 15.25% del subtotal bruto con descuento
-      impuesto = Math.round(subtotalConDescuento * 0.1525);
-      // El total final es la resta
+      impuesto = Math.round(subtotalConDescuento * (ajustes.impuesto_boleta / 100));
       final = subtotalConDescuento - impuesto;
     }
 
@@ -150,7 +155,7 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
       monto_impuesto: impuesto,
       total_final: final
     }));
-  }, [items, totales.descuento_monto, formData.tipo_impuesto]); // Recalcular solo en base a estas dependencias
+  }, [items, totales.descuento_monto, formData.tipo_impuesto, ajustes]); // Recalcular al cambiar config
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
@@ -503,8 +508,8 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
                   onChange={e => setFormData({...formData, tipo_impuesto: e.target.value})}
                 >
                   <option value="Sin Impuesto">Sin Impuesto</option>
-                  <option value="Factura (IVA 19%)">Factura (IVA 19%)</option>
-                  <option value="Boleta (Honorarios 15.25%)">Boleta (Honorarios 15.25%)</option>
+                  <option value={formData.tipo_impuesto?.includes('Factura') ? formData.tipo_impuesto : `Factura (IVA ${ajustes.impuesto_iva}%)`}>Factura (IVA {ajustes.impuesto_iva}%)</option>
+                  <option value={formData.tipo_impuesto?.includes('Boleta') ? formData.tipo_impuesto : `Boleta (Honorarios ${ajustes.impuesto_boleta}%)`}>Boleta (Honorarios {ajustes.impuesto_boleta}%)</option>
                 </select>
               </div>
             </div>
@@ -627,9 +632,9 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
                       <td style={{ padding: '0.5rem', verticalAlign: 'middle', fontWeight: formData.tipo_impuesto.includes('Boleta') ? 'normal' : 'bold' }}>
                         ${(item.cantidad * item.precio_unitario).toLocaleString('es-CL')}
                       </td>
-                      {formData.tipo_impuesto.includes('Boleta') && (
+                      {formData.tipo_impuesto?.includes('Boleta') && (
                         <td style={{ padding: '0.5rem', verticalAlign: 'middle', fontWeight: 'bold', color: 'var(--primary)' }}>
-                          ${Math.round((item.cantidad * item.precio_unitario) * 1.1525).toLocaleString('es-CL')}
+                          ${Math.round((item.cantidad * item.precio_unitario) * (1 + (ajustes.impuesto_boleta / 100))).toLocaleString('es-CL')}
                         </td>
                       )}
                       <td style={{ padding: '0.5rem', verticalAlign: 'middle', textAlign: 'center' }}>
@@ -679,11 +684,11 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
                 {totales.monto_impuesto > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--primary)' }}>
                     <span>
-                      {formData.tipo_impuesto.includes('Factura') ? 'IVA (19%)' : 
-                       formData.tipo_impuesto.includes('Boleta') ? 'Retención (15.25%)' : 
+                      {formData.tipo_impuesto?.includes('Factura') ? `IVA (${ajustes.impuesto_iva}%)` : 
+                       formData.tipo_impuesto?.includes('Boleta') ? `Retención (${ajustes.impuesto_boleta}%)` : 
                        'Impuesto'}:
                     </span>
-                    <span>{formData.tipo_impuesto.includes('Boleta') ? '-' : '+'} ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
+                    <span>{formData.tipo_impuesto?.includes('Boleta') ? '-' : '+'} ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', fontSize: '1.25rem' }}>

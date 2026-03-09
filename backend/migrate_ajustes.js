@@ -24,7 +24,7 @@ const createTableSql = `
     banco_tipo_cuenta TEXT,
     banco_numero_cuenta TEXT,
     idioma TEXT DEFAULT 'Español Latino',
-    impuesto_boleta REAL DEFAULT 13.75,
+    impuesto_boleta REAL DEFAULT 15.25,
     impuesto_iva REAL DEFAULT 19.00
   )
 `;

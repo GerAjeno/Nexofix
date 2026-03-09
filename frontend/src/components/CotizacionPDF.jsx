@@ -164,9 +164,7 @@ export default function CotizacionPDF({ data, onClose }) {
                   {data.monto_impuesto > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: isBoleta ? '#e11d48' : '#0284c7' }}>
                       <span>
-                        {data.tipo_impuesto?.includes('Factura') ? 'IVA (19%)' : 
-                         data.tipo_impuesto?.includes('Boleta') ? 'Retención (15.25%)' : 
-                         'Impuesto'}:
+                        {data.tipo_impuesto && data.tipo_impuesto !== 'Sin Impuesto' ? data.tipo_impuesto : 'Impuesto'}:
                       </span>
                       <span>{isBoleta ? '-' : '+'} {formatearDinero(data.monto_impuesto)}</span>
                     </div>

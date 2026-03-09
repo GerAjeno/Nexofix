@@ -22,7 +22,7 @@ export default function Ajustes() {
     banco_tipo_cuenta: 'Cuenta Corriente',
     banco_numero_cuenta: '',
     idioma: 'Español Latino',
-    impuesto_boleta: 13.75,
+    impuesto_boleta: 15.25,
     impuesto_iva: 19.00
   });
 
@@ -48,7 +48,7 @@ export default function Ajustes() {
         banco_tipo_cuenta: data.banco_tipo_cuenta || 'Cuenta Corriente',
         banco_numero_cuenta: data.banco_numero_cuenta || '',
         idioma: data.idioma || 'Español Latino',
-        impuesto_boleta: data.impuesto_boleta || 13.75,
+        impuesto_boleta: data.impuesto_boleta || 15.25,
         impuesto_iva: data.impuesto_iva || 19.00
       });
       setPreviewLogo(data.empresa_logo && data.empresa_logo !== '/logo.png' 
