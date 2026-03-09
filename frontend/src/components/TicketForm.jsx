@@ -84,6 +84,20 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     let value = e.target.value.replace(/\D/g, ''); // Solo números
     if (value.length > 8) value = value.slice(0, 8);
     
+    // Validar día (primeros 2 dígitos)
+    if (value.length >= 2) {
+      const day = parseInt(value.slice(0, 2));
+      if (day > 31) value = '31' + value.slice(2);
+      if (day === 0 && value.length === 2) value = '01'; // No permitir día 00
+    }
+
+    // Validar mes (siguientes 2 dígitos)
+    if (value.length >= 4) {
+      const month = parseInt(value.slice(2, 4));
+      if (month > 12) value = value.slice(0, 2) + '12' + value.slice(4);
+      if (month === 0) value = value.slice(0, 2) + '01' + value.slice(4); // No permitir mes 00
+    }
+    
     // Aplicar máscara DD/MM/AAAA
     let formatted = value;
     if (value.length > 4) {
@@ -101,10 +115,21 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     setError(null);
 
     // Validación básica de formato DD/MM/AAAA si hay jornada
-    if (formData.jornada !== 'Sin Asignar' && !/^\d{2}\/\d{2}\/\d{4}$/.test(formData.fecha_agendada)) {
-      setError('El formato de fecha debe ser DD/MM/AAAA');
-      setIsSubmitting(false);
-      return;
+    if (formData.jornada !== 'Sin Asignar') {
+      if (!/^\d{2}\/\d{2}\/\d{4}$/.test(formData.fecha_agendada)) {
+        setError('El formato de fecha debe ser DD/MM/AAAA');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validación lógica de la fecha (ej: no permitir 31 de abril)
+      const [d, m, y] = formData.fecha_agendada.split('/').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m - 1 || dateObj.getDate() !== d) {
+        setError('La fecha ingresada no es válida (ej: compruebe los días del mes)');
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     try {
