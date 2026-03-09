@@ -58,7 +58,7 @@ router.post('/', (req, res) => {
         numero_cotizacion, cliente_id, fecha_emision, validez, tipo_trabajo, proyecto, 
         descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto, 
         tipo_impuesto, monto_impuesto, total_final, condiciones_notas, activo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `;
 
     const params = [
