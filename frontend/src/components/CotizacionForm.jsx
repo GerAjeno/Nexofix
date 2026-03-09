@@ -568,7 +568,11 @@ export default function CotizacionForm({ onClose, onSave }) {
                 </div>
                 {totales.monto_impuesto > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--primary)' }}>
-                    <span>{formData.tipo_impuesto.split(' ')[0]}:</span>
+                    <span>
+                      {formData.tipo_impuesto.includes('Factura') ? 'IVA (19%)' : 
+                       formData.tipo_impuesto.includes('Boleta') ? 'Retención (15.25%)' : 
+                       'Impuesto'}:
+                    </span>
                     <span>+ ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
                   </div>
                 )}

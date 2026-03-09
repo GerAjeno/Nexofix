@@ -58,7 +58,7 @@ export default function CotizacionPDF({ data, onClose }) {
             <div style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--success) 100%)', padding: '2rem 3rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 {/* Logo Oficial */}
-                <div style={{ width: '64px', height: '64px', background: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', padding: '5px' }}>
+                <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
                   <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
@@ -152,7 +152,11 @@ export default function CotizacionPDF({ data, onClose }) {
                   )}
                   {data.monto_impuesto > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#0284c7' }}>
-                      <span>{data.tipo_impuesto?.split(' ')[0] || 'Impuesto'}:</span>
+                      <span>
+                        {data.tipo_impuesto?.includes('Factura') ? 'IVA (19%)' : 
+                         data.tipo_impuesto?.includes('Boleta') ? 'Retención (15.25%)' : 
+                         'Impuesto'}:
+                      </span>
                       <span>+ {formatearDinero(data.monto_impuesto)}</span>
                     </div>
                   )}
