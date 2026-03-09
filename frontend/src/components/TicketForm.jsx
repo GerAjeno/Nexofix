@@ -66,8 +66,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: '700px' }}>
+    <div className="modal-overlay" style={{ zIndex: 1000 }}>
+      <div className="modal-content" style={{ maxWidth: '750px', backgroundColor: '#000', border: '1px solid #333' }}>
         <div className="modal-header">
           <h2 className="modal-title">{ticket ? `Editar Trabajo ${ticket.numero_ticket}` : 'Nuevo Trabajo / Ticket'}</h2>
           <button className="close-btn" onClick={onClose}><X size={24} /></button>
@@ -102,7 +102,19 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               <select 
                 className="form-control" 
                 value={formData.cotizacion_id}
-                onChange={e => setFormData({...formData, cotizacion_id: e.target.value})}
+                onChange={e => {
+                  const cotId = e.target.value;
+                  const selectedCot = cotizaciones.find(c => c.id == cotId);
+                  
+                  setFormData(prev => ({
+                    ...prev, 
+                    cotizacion_id: cotId,
+                    // Auto-completar descripción si está vacía
+                    descripcion_problema: (prev.descripcion_problema === '' && selectedCot) 
+                      ? selectedCot.descripcion_trabajo 
+                      : prev.descripcion_problema
+                  }));
+                }}
                 disabled={!!ticket}
               >
                 <option value="">Ninguna...</option>

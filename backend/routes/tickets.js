@@ -6,9 +6,10 @@ const router = express.Router();
 // GET todos los tickets activos
 router.get('/', (req, res) => {
   const sql = `
-    SELECT t.*, c.nombre as cliente_nombre 
+    SELECT t.*, c.nombre as cliente_nombre, cot.proyecto as proyecto_nombre
     FROM tickets t
     JOIN clientes c ON t.cliente_id = c.id
+    LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
     WHERE t.activo = 1
     ORDER BY t.id DESC
   `;
@@ -21,9 +22,11 @@ router.get('/', (req, res) => {
 // GET un ticket por ID
 router.get('/:id', (req, res) => {
   const sql = `
-    SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion
+    SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
+           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion
     FROM tickets t
     JOIN clientes c ON t.cliente_id = c.id
+    LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
     WHERE t.id = ?
   `;
   db.get(sql, [req.params.id], (err, row) => {

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Plus, Archive, ExternalLink, Filter } from 'lucide-react';
+import { Plus, Archive, ExternalLink, Filter, Printer } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 import TicketForm from '../components/TicketForm';
+import TicketPDF from '../components/TicketPDF';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [pdfData, setPdfData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchTickets = async () => {
@@ -35,12 +37,21 @@ export default function Tickets() {
     }
   };
 
+  const handleOpenOT = async (ticketId) => {
+    try {
+      const data = await ticketsService.getById(ticketId);
+      setPdfData(data);
+    } catch (err) {
+      console.error(err);
+      alert('Error cargando los detalles para la OT');
+    }
+  };
   const getStatusBadge = (estado) => {
     const styles = {
-      'Pendiente': { bg: '#fef3c7', color: '#92400e' },
-      'En Proceso': { bg: '#dcfce7', color: '#166534' },
-      'Terminado': { bg: '#d1fae5', color: '#065f46' },
-      'Cancelado': { bg: '#fee2e2', color: '#991b1b' }
+      'Pendiente': { bg: 'rgba(255, 193, 7, 0.2)', color: '#ffc107' }, // Amarillo NexoFix
+      'En Proceso': { bg: 'rgba(0, 123, 255, 0.2)', color: '#007bff' }, // Azul NexoFix
+      'Terminado': { bg: 'rgba(40, 167, 69, 0.2)', color: '#28a745' },  // Verde NexoFix
+      'Cancelado': { bg: 'rgba(220, 53, 69, 0.2)', color: '#dc3545' }
     };
     const style = styles[estado] || { bg: '#f3f4f6', color: '#374151' };
     return (
@@ -101,6 +112,7 @@ export default function Tickets() {
               <tr>
                 <th>N° Ticket</th>
                 <th>Fecha</th>
+                <th>Proyecto</th>
                 <th>Cliente</th>
                 <th>Estado</th>
                 <th>Prioridad</th>
@@ -113,10 +125,14 @@ export default function Tickets() {
                   <tr key={ticket.id}>
                     <td><strong>{ticket.numero_ticket}</strong></td>
                     <td>{new Date(ticket.fecha_creacion + 'T12:00:00').toLocaleDateString('es-CL')}</td>
+                    <td style={{ color: 'var(--primary)', fontWeight: '500' }}>{ticket.proyecto_nombre || '-'}</td>
                     <td>{ticket.cliente_nombre}</td>
                     <td>{getStatusBadge(ticket.estado)}</td>
                     <td>{getPriorityBadge(ticket.prioridad)}</td>
                     <td style={{ textAlign: 'right' }}>
+                      <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
+                        <Printer size={18} />
+                      </button>
                       <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
                         <ExternalLink size={18} />
                       </button>
@@ -143,6 +159,13 @@ export default function Tickets() {
           ticket={selectedTicket} 
           onClose={() => setShowForm(false)} 
           onSave={() => { setShowForm(false); fetchTickets(); }} 
+        />
+      )}
+
+      {pdfData && (
+        <TicketPDF 
+          data={pdfData} 
+          onClose={() => setPdfData(null)} 
         />
       )}
     </div>
