@@ -10,7 +10,7 @@ export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
     { path: '/cotizaciones', name: 'Cotizaciones', icon: FileText },
     { path: '/tickets', name: 'Tickets', icon: ClipboardList },
     { path: '/agenda', name: 'Agenda', icon: Calendar },
-    { path: '/cobranza', name: 'Cobranza', icon: CreditCard },
+    { path: '/cobranzas', name: 'Cobranzas', icon: CreditCard },
   ];
 
   // Cerrar sidebar en móvil al hacer clic en un link

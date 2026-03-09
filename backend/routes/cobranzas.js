@@ -29,7 +29,7 @@ router.get('/:id', (req, res) => {
            cot.proyecto as proyecto_nombre, cot.numero_cotizacion, cot.descripcion_trabajo as descripcion_cotizada,
            cot.subtotal, cot.monto_impuesto, cot.tipo_impuesto, cot.total_final
     FROM cobranzas cob
-    JOIN clientes c ON cob.cliente_id = c.id
+    LEFT JOIN clientes c ON cob.cliente_id = c.id
     LEFT JOIN tickets t ON cob.ticket_id = t.id
     LEFT JOIN cotizaciones cot ON cob.cotizacion_id = cot.id
     WHERE cob.id = ?
