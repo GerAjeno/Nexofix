@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar } from 'lucide-react';
+import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar, Settings } from 'lucide-react';
 
 export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
   const location = useLocation();
@@ -11,6 +11,7 @@ export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
     { path: '/tickets', name: 'Tickets', icon: ClipboardList },
     { path: '/agenda', name: 'Agenda', icon: Calendar },
     { path: '/cobranzas', name: 'Cobranzas', icon: CreditCard },
+    { path: '/ajustes', name: 'Ajustes', icon: Settings },
   ];
 
   // Cerrar sidebar en móvil al hacer clic en un link

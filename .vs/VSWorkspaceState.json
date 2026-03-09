@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\backend",
+    "\\frontend",
+    "\\frontend\\public",
+    "\\frontend\\src",
+    "\\frontend\\src\\components",
+    "\\frontend\\src\\utils"
+  ],
+  "SelectedNode": "\\frontend\\src\\components\\CotizacionPDF.jsx",
+  "PreviewInSolutionExplorer": false
+}

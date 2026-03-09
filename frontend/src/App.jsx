@@ -8,6 +8,7 @@ import Cotizaciones from './pages/Cotizaciones';
 import Tickets from './pages/Tickets';
 import Agenda from './pages/Agenda';
 import Cobranzas from './pages/Cobranzas';
+import Ajustes from './pages/Ajustes';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -96,6 +97,7 @@ function AppLayout() {
               <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
               <Route path="/cobranzas" element={<ProtectedRoute><Cobranzas /></ProtectedRoute>} />
+              <Route path="/ajustes" element={<ProtectedRoute><Ajustes /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>
