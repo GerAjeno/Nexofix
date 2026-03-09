@@ -13,6 +13,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
     direccion_trabajo: '',
     telefono_contacto: '',
     tipo_trabajo: '',
+    jornada: 'Sin Asignar',
+    fecha_agendada: '',
     estado: 'Pendiente',
     prioridad: 'Media',
     descripcion_problema: '',
@@ -48,6 +50,8 @@ export default function TicketForm({ ticket, onClose, onSave }) {
         tipo_trabajo: ticket.tipo_trabajo || '',
         estado: ticket.estado,
         prioridad: ticket.prioridad,
+        jornada: ticket.jornada || 'Sin Asignar',
+        fecha_agendada: ticket.fecha_agendada || '',
         descripcion_problema: ticket.descripcion_problema,
         notas_tecnicas: ticket.notas_tecnicas || ''
       });
@@ -226,6 +230,26 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               </select>
             </div>
             <div className="form-group">
+              <label className="form-label">Jornada</label>
+              <select 
+                className="form-control" 
+                value={formData.jornada}
+                onChange={e => {
+                  const val = e.target.value;
+                  setFormData(prev => ({
+                    ...prev, 
+                    jornada: val,
+                    // Si selecciona jornada, automatizar estado a En Proceso si estaba Pendiente
+                    estado: (val !== 'Sin Asignar' && prev.estado === 'Pendiente') ? 'En Proceso' : prev.estado
+                  }));
+                }}
+              >
+                <option value="Sin Asignar">Sin Asignar</option>
+                <option value="Mañana">Mañana</option>
+                <option value="Tarde">Tarde</option>
+              </select>
+            </div>
+            <div className="form-group">
               <label className="form-label">Prioridad</label>
               <select 
                 className="form-control" 
@@ -238,6 +262,21 @@ export default function TicketForm({ ticket, onClose, onSave }) {
               </select>
             </div>
           </div>
+
+          {/* Fecha Agendada Condicional */}
+          {formData.jornada !== 'Sin Asignar' && (
+            <div className="form-group" style={{ marginTop: '1rem' }}>
+              <label className="form-label" style={{ color: 'var(--primary)' }}>Fecha Agendada (*)</label>
+              <input 
+                type="date" 
+                className="form-control" 
+                value={formData.fecha_agendada}
+                onChange={e => setFormData({...formData, fecha_agendada: e.target.value})}
+                required
+                style={{ borderColor: 'var(--primary)' }}
+              />
+            </div>
+          )}
 
           <div className="form-group" style={{ marginTop: '1rem' }}>
             <label className="form-label">Descripción del Problema / Trabajo (*)</label>

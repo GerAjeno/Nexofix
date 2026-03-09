@@ -98,6 +98,8 @@ function initDb() {
         direccion_trabajo TEXT,
         telefono_contacto TEXT,
         tipo_trabajo TEXT,
+        jornada TEXT DEFAULT 'Sin Asignar',
+        fecha_agendada TEXT,
         fecha_creacion TEXT DEFAULT (DATE('now')),
         estado TEXT DEFAULT 'Pendiente', -- 'Pendiente', 'En Proceso', 'Terminado', 'Cancelado'
         prioridad TEXT DEFAULT 'Media', -- 'Baja', 'Media', 'Alta'
@@ -107,7 +109,13 @@ function initDb() {
         FOREIGN KEY (cliente_id) REFERENCES clientes (id),
         FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones (id)
       )
-    `);
+    `, (err) => {
+      if (!err) {
+        // Migración: Añadir columnas si no existen
+        db.run("ALTER TABLE tickets ADD COLUMN jornada TEXT DEFAULT 'Sin Asignar'", () => {});
+        db.run("ALTER TABLE tickets ADD COLUMN fecha_agendada TEXT", () => {});
+      }
+    });
     
     // Tablas para Plantillas de Itemizados Completos
     db.run(`

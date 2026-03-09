@@ -57,16 +57,19 @@ router.get('/:id', (req, res) => {
 // POST crear nuevo ticket
 router.post('/', (req, res) => {
   const { 
-    cliente_id, 
-    cotizacion_id, 
-    direccion_trabajo,
-    telefono_contacto,
-    tipo_trabajo,
     estado, 
     prioridad, 
     descripcion_problema, 
-    notas_tecnicas 
+    notas_tecnicas,
+    jornada,
+    fecha_agendada
   } = req.body;
+
+  // Lógica: Si se asigna jornada, pasar a En Proceso automáticamente
+  let estadoFinal = estado || 'Pendiente';
+  if ((jornada === 'Mañana' || jornada === 'Tarde') && estadoFinal === 'Pendiente') {
+    estadoFinal = 'En Proceso';
+  }
 
   // Generar número de ticket único TKT-XXXXXX
   const numero_ticket = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -75,8 +78,9 @@ router.post('/', (req, res) => {
   const sql = `
     INSERT INTO tickets (
       numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto, tipo_trabajo,
-      fecha_creacion, estado, prioridad, descripcion_problema, notas_tecnicas
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      fecha_creacion, estado, prioridad, descripcion_problema, notas_tecnicas,
+      jornada, fecha_agendada
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(sql, [
@@ -87,10 +91,12 @@ router.post('/', (req, res) => {
     telefono_contacto,
     tipo_trabajo,
     fecha, 
-    estado || 'Pendiente', 
+    estadoFinal, 
     prioridad || 'Media', 
     descripcion_problema, 
-    notas_tecnicas || ''
+    notas_tecnicas || '',
+    jornada || 'Sin Asignar',
+    fecha_agendada || null
   ], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ id: this.lastID, numero_ticket });
@@ -99,15 +105,33 @@ router.post('/', (req, res) => {
 
 // PUT actualizar ticket
 router.put('/:id', (req, res) => {
-  const { estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, tipo_trabajo } = req.body;
+  const { 
+    estado, prioridad, descripcion_problema, notas_tecnicas, 
+    direccion_trabajo, telefono_contacto, tipo_trabajo,
+    jornada, fecha_agendada
+  } = req.body;
+
+  // Lógica de agendamiento automático
+  let nuevoEstado = estado;
+  if ((jornada === 'Mañana' || jornada === 'Tarde') && estado === 'Pendiente') {
+    nuevoEstado = 'En Proceso';
+  }
+
   const sql = `
     UPDATE tickets 
-    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, direccion_trabajo = ?, telefono_contacto = ?, tipo_trabajo = ?
+    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, 
+        direccion_trabajo = ?, telefono_contacto = ?, tipo_trabajo = ?,
+        jornada = ?, fecha_agendada = ?
     WHERE id = ?
   `;
-  db.run(sql, [estado, prioridad, descripcion_problema, notas_tecnicas, direccion_trabajo, telefono_contacto, tipo_trabajo, req.params.id], function(err) {
+  db.run(sql, [
+    nuevoEstado, prioridad, descripcion_problema, notas_tecnicas, 
+    direccion_trabajo, telefono_contacto, tipo_trabajo,
+    jornada, fecha_agendada,
+    req.params.id
+  ], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ updated: this.changes });
+    res.json({ updated: this.changes, nuevoEstado });
   });
 });
 
