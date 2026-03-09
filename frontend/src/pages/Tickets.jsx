@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Printer, Edit2, Archive, Calendar } from 'lucide-react';
+import { Plus, Trash2, Printer, Edit2, Archive, Calendar, CheckCircle } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 import TicketForm from '../components/TicketForm';
 import TicketPDF from '../components/TicketPDF';
 import ScheduleModal from '../components/ScheduleModal';
+import TicketDetailModal from '../components/TicketDetailModal';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
@@ -13,6 +14,11 @@ export default function Tickets() {
   const [loading, setLoading] = useState(true);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedForSchedule, setSelectedForSchedule] = useState(null);
+  
+  // Estados para Detalle/Terminar
+  const [showDetail, setShowDetail] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [finishMode, setFinishMode] = useState(false);
 
   const fetchTickets = async () => {
     try {
@@ -133,15 +139,31 @@ export default function Tickets() {
                     <td>{getStatusBadge(ticket.estado)}</td>
                     <td>{getPriorityBadge(ticket.prioridad)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 32px)', gap: '4px', justifyContent: 'end' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 32px)', gap: '4px', justifyContent: 'end' }}>
                         <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
                           <Printer size={18} />
                         </button>
                         <button className="icon-btn" title="Agendar Trabajo" onClick={() => { setSelectedForSchedule(ticket); setShowScheduleModal(true); }}>
                           <Calendar size={18} style={{ color: 'var(--primary)' }} />
                         </button>
+                        {ticket.estado !== 'Terminado' && (
+                          <button className="icon-btn" title="Terminar Trabajo" style={{ color: '#28a745' }} onClick={() => { 
+                            setSelectedTicketId(ticket.id);
+                            setFinishMode(true);
+                            setShowDetail(true);
+                          }}>
+                            <CheckCircle size={18} />
+                          </button>
+                        )}
                         <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
                           <Edit2 size={18} />
+                        </button>
+                        <button className="icon-btn" title="Ver Detalle" onClick={() => {
+                          setSelectedTicketId(ticket.id);
+                          setFinishMode(false);
+                          setShowDetail(true);
+                        }}>
+                          <Plus size={18} style={{ transform: 'rotate(45deg)', opacity: 0.6 }} />
                         </button>
                         <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
                           <Archive size={18} />
@@ -182,6 +204,18 @@ export default function Tickets() {
           ticket={selectedForSchedule} 
           onClose={() => { setShowScheduleModal(false); setSelectedForSchedule(null); }} 
           onSave={fetchTickets} 
+        />
+      )}
+
+      {showDetail && selectedTicketId && (
+        <TicketDetailModal 
+          ticketId={selectedTicketId}
+          initialIsFinishing={finishMode}
+          onClose={() => {
+            setShowDetail(false);
+            setSelectedTicketId(null);
+            fetchTickets();
+          }}
         />
       )}
     </div>

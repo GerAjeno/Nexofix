@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { X, Clock, MapPin, Phone, Clipboard, FileText, AlertCircle, User } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 
-export default function TicketDetailModal({ ticketId, onClose }) {
+export default function TicketDetailModal({ ticketId, onClose, initialIsFinishing = false }) {
   const [ticket, setTicket] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
   // Estados para modo finalizar
-  const [isFinishing, setIsFinishing] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(initialIsFinishing);
   const [finishDate, setFinishDate] = useState('');
   const [finishNotes, setFinishNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +28,18 @@ export default function TicketDetailModal({ ticketId, onClose }) {
     };
     loadDetail();
   }, [ticketId]);
+
+  // Si se abre en modo finalizar, pre-poblar datos una vez cargado el ticket
+  useEffect(() => {
+    if (initialIsFinishing && ticket && !finishDate) {
+      const hoy = new Date();
+      const d = String(hoy.getDate()).padStart(2, '0');
+      const m = String(hoy.getMonth() + 1).padStart(2, '0');
+      const y = hoy.getFullYear();
+      setFinishDate(`${d}/${m}/${y}`);
+      setFinishNotes(ticket.notas_tecnicas || '');
+    }
+  }, [initialIsFinishing, ticket]);
 
   const handleDateChange = (e) => {
     let value = e.target.value.replace(/\D/g, ''); 
