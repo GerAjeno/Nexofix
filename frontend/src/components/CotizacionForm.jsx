@@ -591,7 +591,7 @@ export default function CotizacionForm({ onClose, onSave }) {
                        formData.tipo_impuesto.includes('Boleta') ? 'Retención (15.25%)' : 
                        'Impuesto'}:
                     </span>
-                    <span>+ ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
+                    <span>{formData.tipo_impuesto.includes('Boleta') ? '-' : '+'} ${totales.monto_impuesto.toLocaleString('es-CL')}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', fontSize: '1.25rem' }}>
