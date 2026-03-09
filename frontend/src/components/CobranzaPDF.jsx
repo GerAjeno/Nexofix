@@ -1,13 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Download, MapPin, Phone, User, Calendar, FileText, DollarSign, ClipboardCheck } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 
 export default function CobranzaPDF({ cobranzaId, onClose }) {
-  const [data, setData] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const printRef = useRef();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadData = async () => {
       try {
         const response = await fetch(`http://localhost:3000/api/cobranzas/${cobranzaId}`);
