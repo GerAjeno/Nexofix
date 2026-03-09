@@ -25,7 +25,11 @@ const createTableSql = `
     banco_numero_cuenta TEXT,
     idioma TEXT DEFAULT 'Español Latino',
     impuesto_boleta REAL DEFAULT 15.25,
-    impuesto_iva REAL DEFAULT 19.00
+    impuesto_iva REAL DEFAULT 19.00,
+    smtp_host TEXT,
+    smtp_puerto INTEGER,
+    smtp_user TEXT,
+    smtp_pass TEXT
   )
 `;
 
@@ -46,8 +50,16 @@ db.serialize(() => {
           });
         } else {
           console.log("Valores de Ajustes ya existen en el sistema.");
-          db.close();
         }
+        
+        // Migraciones de nuevas columnas SMTP para BD existente
+        db.run('ALTER TABLE ajustes_general ADD COLUMN smtp_host TEXT', () => {});
+        db.run('ALTER TABLE ajustes_general ADD COLUMN smtp_puerto INTEGER', () => {});
+        db.run('ALTER TABLE ajustes_general ADD COLUMN smtp_user TEXT', () => {});
+        db.run('ALTER TABLE ajustes_general ADD COLUMN smtp_pass TEXT', () => {
+          console.log("Columnas SMTP verificadas.");
+          db.close();
+        });
       });
     }
   });

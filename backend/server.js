@@ -12,6 +12,7 @@ import cobranzaRoutes from './routes/cobranzas.js';
 import dashboardRoutes from './routes/dashboard.js';
 import authRoutes from './routes/auth.js';
 import ajustesRoutes from './routes/ajustes.js';
+import emailRoutes from './routes/email.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.use('/api/cobranzas', cobranzaRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/ajustes', ajustesRoutes);
+app.use('/api/email', emailRoutes);
 
 // Endpoint de subida de archivos para notas especiales o imágenes
 app.post('/api/upload', upload.single('imagen'), (req, res) => {

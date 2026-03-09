@@ -1,9 +1,22 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Download, ShieldCheck, MapPin, Phone, User, Calendar, FileText } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import { getAjustesGenerales } from '../services/ajustesService';
 
 export default function TicketPDF({ data, onClose }) {
   const printRef = useRef();
+  const [empresa, setEmpresa] = useState({
+    empresa_nombre: 'NexoFix SpA',
+    banco_email: 'contacto@nexofix.cl'
+  });
+
+  useEffect(() => {
+    getAjustesGenerales().then(data => {
+      if(data.empresa_nombre) {
+        setEmpresa(data);
+      }
+    }).catch(err => console.error("Error cargando ajustes en TicketPDF", err));
+  }, []);
 
   if (!data) return null;
 
@@ -60,7 +73,7 @@ export default function TicketPDF({ data, onClose }) {
                   <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold' }}>NexoFix SpA</h1>
+                  <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold' }}>{empresa.empresa_nombre}</h1>
                   <span style={{ fontSize: '12px', opacity: 0.9 }}>Orden de Trabajo Técnica</span>
                 </div>
               </div>
@@ -146,7 +159,7 @@ export default function TicketPDF({ data, onClose }) {
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ borderTop: '1px solid #333', paddingTop: '10px' }}>
                     <div style={{ fontWeight: 'bold' }}>Firma Técnico Responsable</div>
-                    <div style={{ fontSize: '12px' }}>NexoFix SpA</div>
+                    <div style={{ fontSize: '12px' }}>{empresa.empresa_nombre}</div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
@@ -161,7 +174,7 @@ export default function TicketPDF({ data, onClose }) {
 
             {/* Footer */}
             <div style={{ position: 'absolute', bottom: '0', width: '100%', padding: '20px 0', textAlign: 'center', fontSize: '11px', color: '#9ca3af', borderTop: '1px solid #f3f4f6' }}>
-              NexoFix SpA | OT Generada Automáticamente | contacto@nexofix.cl
+              {empresa.empresa_nombre} | OT Generada Automáticamente | {empresa.banco_email}
             </div>
 
           </div>

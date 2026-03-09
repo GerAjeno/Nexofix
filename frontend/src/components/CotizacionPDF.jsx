@@ -1,11 +1,52 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { X, Download, ShieldCheck } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import { getAjustesGenerales } from '../services/ajustesService';
 
-export default function CotizacionPDF({ data, onClose }) {
+export default function CotizacionPDF({ data, onClose, modoOculto = false, onEmailReady = null }) {
   const printRef = useRef();
+  const [empresa, setEmpresa] = useState({
+    empresa_nombre: 'NexoFix SpA',
+    empresa_direccion: 'Dirección no configurada',
+    empresa_telefono: '+56 9 0000 0000',
+    banco_rut: '',
+    banco_nombre_titular: '',
+    banco_email: '',
+    banco_nombre: '',
+    banco_tipo_cuenta: '',
+    banco_numero_cuenta: ''
+  });
+
+  useEffect(() => {
+    getAjustesGenerales().then(dataConfig => {
+      if(dataConfig.empresa_nombre) {
+        setEmpresa(dataConfig);
+      }
+      
+      // Si estamos en modo oculto, hay que esperar a que el DOM y los datos se monten
+      // Un pequeño setTimeout para asegurar renderizado
+      if (modoOculto && onEmailReady && data) {
+        setTimeout(generarPdfBase64, 500);
+      }
+    }).catch(err => console.error("Error cargando ajustes en PDF", err));
+  }, [data, modoOculto]);
 
   if (!data) return null;
+
+  const generarPdfBase64 = () => {
+    const element = printRef.current;
+    const opt = {
+      margin:       0,
+      filename:     `${data.numero_cotizacion}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).outputPdf('datauristring').then((base64String) => {
+      onEmailReady(base64String);
+    });
+  };
 
   const handleDownload = () => {
     const element = printRef.current;
@@ -35,7 +76,7 @@ export default function CotizacionPDF({ data, onClose }) {
   const isBoleta = data.tipo_impuesto?.includes('Boleta');
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 100, overflowY: 'auto' }}>
+    <div className="modal-overlay" style={{ zIndex: 100, overflowY: 'auto', display: modoOculto ? 'none' : 'flex' }}>
       <div className="modal-content" style={{ maxWidth: '850px', backgroundColor: '#e2e8f0', padding: '1rem', borderRadius: '8px' }}>
         
         {/* Controles del Modal PDF */}
@@ -57,20 +98,20 @@ export default function CotizacionPDF({ data, onClose }) {
           <div ref={printRef} style={{ width: '100%', minHeight: '11in', background: '#fff', color: '#333', fontFamily: '"Arial", sans-serif', fontSize: '14px', lineHeight: 1.5 }}>
             
             {/* Header / Franja Azul Superior */}
-            <div style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--success) 100%)', padding: '2rem 3rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--success) 100%)', padding: '1rem 2rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 {/* Logo Oficial */}
-                <div style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
+                <div style={{ width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
                   <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', letterSpacing: '-0.02em', lineHeight: '1' }}>NexoFix SpA</h1>
-                  <span style={{ fontSize: '14px', opacity: 0.9 }}>Servicios Integrales</span>
+                  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', letterSpacing: '-0.02em', lineHeight: '1' }}>{empresa.empresa_nombre}</h1>
+                  <span style={{ fontSize: '12px', opacity: 0.9 }}>Servicios Integrales</span>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 'normal' }}>COTIZACIÓN</h2>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>N° {data.numero_cotizacion}</div>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'normal' }}>COTIZACIÓN</h2>
+                <div style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '2px' }}>N° {data.numero_cotizacion}</div>
               </div>
             </div>
 
@@ -186,11 +227,28 @@ export default function CotizacionPDF({ data, onClose }) {
                 </div>
               )}
 
+              {/* Datos de Transferencia en Horizontal */}
+              {empresa.banco_nombre && empresa.banco_numero_cuenta && (
+                <div style={{ marginBottom: '2rem', padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Datos para Transferencia Bancaria
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '12px', color: '#4b5563' }}>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Titular:</strong> {empresa.banco_nombre_titular}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '100px' }}><strong>RUT:</strong> {empresa.banco_rut}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Banco:</strong> {empresa.banco_nombre}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Tipo:</strong> {empresa.banco_tipo_cuenta}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Nº Cuenta:</strong> {empresa.banco_numero_cuenta}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '200px' }}><strong>Email:</strong> {empresa.banco_email}</div>
+                  </div>
+                </div>
+              )}
+
             </div>
 
             {/* Footer */}
             <div style={{ position: 'absolute', bottom: '0', width: '100%', padding: '20px 0', textAlign: 'center', fontSize: '11px', color: '#9ca3af', borderTop: '1px solid #f3f4f6' }}>
-              NexoFix SpA | RUT: 76.543.210-K | Dirección: Av. Nueva Providencia 1234, Providencia, Santiago | contacto@nexofix.cl | Tel: +56 9 1234 5678
+              {empresa.empresa_nombre} | {empresa.banco_rut ? `RUT: ${empresa.banco_rut} | ` : ''}Dirección: {empresa.empresa_direccion} | Tel: {empresa.empresa_telefono}
             </div>
 
           </div>

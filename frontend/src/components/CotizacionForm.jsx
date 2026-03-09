@@ -13,6 +13,10 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
   const [ajustes, setAjustes] = useState({ impuesto_iva: 19, impuesto_boleta: 15.25 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Nuevos estados para envío de correo
+  const [enviarCorreo, setEnviarCorreo] = useState(false);
+  const [correoCliente, setCorreoCliente] = useState('');
 
   // Generar número no consecutivo de 6 dígitos
   const generarNumeroCotizacion = () => {
@@ -104,6 +108,12 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
             monto_impuesto: data.monto_impuesto,
             total_final: data.total_final
           });
+          
+          if(data.cliente_id) {
+            const cli = await clientesService.getAll();
+            const found = cli.find(c => c.id === data.cliente_id);
+            if (found && found.email) setCorreoCliente(found.email);
+          }
         } catch (err) {
           console.error('Error cargando detalle para editar:', err);
           setError('No se pudo cargar el detalle de la cotización');
@@ -272,12 +282,25 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
         items: itemsValidos
       };
       
+      let savedCotizacion;
       if (cotizacion) {
-        await cotizacionesService.update(cotizacion.id, payload);
+        savedCotizacion = await cotizacionesService.update(cotizacion.id, payload);
       } else {
-        await cotizacionesService.create(payload);
+        savedCotizacion = await cotizacionesService.create(payload);
       }
-      onSave();
+
+      onSave(); // Refrescar lista maestra
+      
+      if (enviarCorreo && correoCliente) {
+        // Le notificamos a la grilla madre que abra el generador en modo oculto para enviar
+        if (typeof window.triggerCotizacionEmail === 'function') {
+           const idToSend = cotizacion ? cotizacion.id : savedCotizacion.id;
+           window.triggerCotizacionEmail(idToSend, correoCliente);
+        } else {
+           alert("Cotización guardada, pero ocurrió un error al iniciar el envío de correo automático.");
+        }
+      }
+
       onClose();
     } catch (err) {
       setError(err.response?.data?.error || 'Error guardando la cotización');
@@ -389,6 +412,9 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
                       direccion_trabajo: selectedClient ? selectedClient.direccion : prev.direccion_trabajo,
                       telefono_contacto: selectedClient ? selectedClient.telefono : prev.telefono_contacto
                     }));
+                    if (selectedClient && selectedClient.email) {
+                      setCorreoCliente(selectedClient.email);
+                    }
                   }}
                   required
                 >
@@ -740,11 +766,32 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
           </form>
         </div>
 
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>Cancelar</button>
-          <button type="submit" form="cotizacion-form" className="btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Guardando...' : 'Guardar Cotización'}
-          </button>
+        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          
+          {/* Controles de Envío Automático */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+              <input type="checkbox" checked={enviarCorreo} onChange={e => setEnviarCorreo(e.target.checked)} style={{ width: '18px', height: '18px' }} />
+              <strong>Enviar al cliente por email al guardar</strong>
+            </label>
+            {enviarCorreo && (
+              <input 
+                type="email" 
+                className="form-control" 
+                placeholder="Correo del cliente..." 
+                value={correoCliente} 
+                onChange={e => setCorreoCliente(e.target.value)}
+                style={{ width: '250px', padding: '6px 12px', fontSize: '13px' }}
+              />
+            )}
+          </div>
+
+          <div>
+            <button className="btn-secondary" onClick={onClose} disabled={isSubmitting} style={{ marginRight: '10px' }}>Cancelar</button>
+            <button type="submit" form="cotizacion-form" className="btn-primary" disabled={isSubmitting || (enviarCorreo && !correoCliente)}>
+              {isSubmitting ? 'Guardando...' : (enviarCorreo ? 'Guardar y Enviar' : 'Guardar Cotización')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

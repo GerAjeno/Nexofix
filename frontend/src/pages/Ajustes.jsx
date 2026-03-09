@@ -23,7 +23,11 @@ export default function Ajustes() {
     banco_numero_cuenta: '',
     idioma: 'Español Latino',
     impuesto_boleta: 15.25,
-    impuesto_iva: 19.00
+    impuesto_iva: 19.00,
+    smtp_host: '',
+    smtp_puerto: '',
+    smtp_user: '',
+    smtp_pass: ''
   });
 
   const [previewLogo, setPreviewLogo] = useState(null);
@@ -49,7 +53,11 @@ export default function Ajustes() {
         banco_numero_cuenta: data.banco_numero_cuenta || '',
         idioma: data.idioma || 'Español Latino',
         impuesto_boleta: data.impuesto_boleta || 15.25,
-        impuesto_iva: data.impuesto_iva || 19.00
+        impuesto_iva: data.impuesto_iva || 19.00,
+        smtp_host: data.smtp_host || '',
+        smtp_puerto: data.smtp_puerto || '',
+        smtp_user: data.smtp_user || '',
+        smtp_pass: data.smtp_pass || ''
       });
       setPreviewLogo(data.empresa_logo && data.empresa_logo !== '/logo.png' 
         ? `http://localhost:3000${data.empresa_logo}` 
@@ -279,6 +287,38 @@ export default function Ajustes() {
                         <input type="number" step="0.01" className="form-control" name="impuesto_iva" value={generalData.impuesto_iva} onChange={handleChange} style={{ paddingRight: '2rem' }} />
                         <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>%</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CONFIGURACIÓN SERVIDOR DE CORREOS */}
+                <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', gridColumn: window.innerWidth > 1024 ? 'span 2' : 'auto' }}>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
+                    <MonitorCog size={20} /> Configuración de Servidor de Correos (SMTP)
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Configura tu cuenta de correo para enviar cotizaciones y cobros directamente desde NexoFix.</p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '2fr 1fr' : '1fr', gap: '1.5rem' }}>
+                    <div className="form-group">
+                      <label>Servidor SMTP (Ej. smtp.gmail.com)</label>
+                      <input type="text" className="form-control" name="smtp_host" value={generalData.smtp_host} onChange={handleChange} placeholder="Host SMTP" />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Puerto (Ej. 465 SSL o 587 TLS)</label>
+                      <input type="number" className="form-control" name="smtp_puerto" value={generalData.smtp_puerto} onChange={handleChange} placeholder="465" />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                    <div className="form-group">
+                      <label>Correo Remitente (Usuario)</label>
+                      <input type="email" className="form-control" name="smtp_user" value={generalData.smtp_user} onChange={handleChange} placeholder="tu-correo@empresa.com" />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Contraseña o App Password</label>
+                      <input type="password" className="form-control" name="smtp_pass" value={generalData.smtp_pass} onChange={handleChange} placeholder="*******" />
                     </div>
                   </div>
                 </div>

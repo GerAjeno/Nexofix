@@ -1,9 +1,21 @@
 import { useRef, useState, useEffect } from 'react';
 import { Download, MapPin, Phone, User, Calendar, FileText, DollarSign, ClipboardCheck, CheckCircle } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import { getAjustesGenerales } from '../services/ajustesService';
 
 export default function CobranzaPDF({ cobranzaId, onClose }) {
   const [data, setData] = useState(null);
+  const [empresa, setEmpresa] = useState({
+    empresa_nombre: 'NexoFix SpA',
+    empresa_direccion: '',
+    empresa_telefono: '',
+    banco_rut: '',
+    banco_email: 'contacto@nexofix.cl',
+    banco_nombre_titular: '',
+    banco_nombre: '',
+    banco_tipo_cuenta: '',
+    banco_numero_cuenta: ''
+  });
   const [loading, setLoading] = useState(true);
   const printRef = useRef();
 
@@ -13,6 +25,11 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
         const response = await fetch(`http://localhost:3000/api/cobranzas/${cobranzaId}`);
         const json = await response.json();
         setData(json);
+        
+        const ajustesData = await getAjustesGenerales();
+        if(ajustesData && ajustesData.empresa_nombre) {
+          setEmpresa(ajustesData);
+        }
       } catch (err) {
         console.error("Error cargando cobranza para PDF:", err);
       } finally {
@@ -68,7 +85,7 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img src="/logo.png" alt="Logo" style={{ width: '70px', height: '70px', objectFit: 'contain' }} />
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>NexoFix SpA</h1>
+                  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>{empresa.empresa_nombre}</h1>
                   <span style={{ fontSize: '11px', opacity: 0.9 }}>Gestión y Recaudación Profesional</span>
                 </div>
               </div>
@@ -88,12 +105,14 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
                   <div><strong>Cliente:</strong> {data.cliente_nombre}</div>
                   <div><strong>RUT:</strong> {data.cliente_rut}</div>
                   <div><strong>Dirección:</strong> {data.direccion_trabajo || data.cliente_direccion}</div>
+                  <div><strong>Teléfono:</strong> {data.telefono_contacto || data.cliente_telefono || 'No registrado'}</div>
                 </div>
                 <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '1.5rem' }}>
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', color: '#007bff', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Calendar size={14} /> Datos de Referencia
                   </h3>
                   <div><strong>Fecha Emisión:</strong> {new Date(data.fecha_creacion + 'T12:00:00').toLocaleDateString('es-CL')}</div>
+                  <div><strong>N° Cotización:</strong> {data.numero_cotizacion || 'S/C'}</div>
                   <div><strong>N° Ticket:</strong> {data.numero_ticket}</div>
                   <div><strong>Proyecto:</strong> {data.proyecto_nombre || 'S/P'}</div>
                 </div>
@@ -184,17 +203,26 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
                 </div>
               )}
 
-              {/* Pie de Firma */}
-              <div style={{ marginTop: '3rem', borderTop: '1px dashed #cbd5e1', paddingTop: '1.5rem', textAlign: 'center' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', color: '#64748b' }}>
-                  <ClipboardCheck size={20} />
-                  <span>Documento de conciliación técnica y comercial generado por NexoFix SpA</span>
+              {/* Datos de Transferencia en Horizontal */}
+              {empresa.banco_nombre && empresa.banco_numero_cuenta && (
+                <div style={{ marginTop: '2rem', padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', breakInside: 'avoid' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClipboardCheck size={16} /> Datos para Transferencia Bancaria
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '12px', color: '#4b5563' }}>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Titular:</strong> {empresa.banco_nombre_titular}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '100px' }}><strong>RUT:</strong> {empresa.banco_rut}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Banco:</strong> {empresa.banco_nombre}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Tipo:</strong> {empresa.banco_tipo_cuenta}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '150px' }}><strong>Nº Cuenta:</strong> {empresa.banco_numero_cuenta}</div>
+                    <div style={{ flex: '1 1 auto', minWidth: '200px' }}><strong>Email:</strong> {empresa.banco_email}</div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div style={{ position: 'absolute', bottom: '0', width: '100%', padding: '15px 0', textAlign: 'center', fontSize: '10px', color: '#94a3b8', borderTop: '1px solid #f1f5f9' }}>
-              Este documento es un comprobante de servicio y cobro. | NexoFix SpA | contacto@nexofix.cl
+            <div style={{ position: 'absolute', bottom: '0', width: '100%', padding: '20px 0', textAlign: 'center', fontSize: '11px', color: '#9ca3af', borderTop: '1px solid #f3f4f6' }}>
+              {empresa.empresa_nombre} | {empresa.banco_rut ? `RUT: ${empresa.banco_rut} | ` : ''}Dirección: {empresa.empresa_direccion} | Tel: {empresa.empresa_telefono}
             </div>
           </div>
         </div>

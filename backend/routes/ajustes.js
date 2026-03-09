@@ -27,7 +27,11 @@ router.put('/general', (req, res) => {
     banco_numero_cuenta,
     idioma,
     impuesto_boleta,
-    impuesto_iva
+    impuesto_iva,
+    smtp_host,
+    smtp_puerto,
+    smtp_user,
+    smtp_pass
   } = req.body;
 
   const sql = `
@@ -36,7 +40,8 @@ router.put('/general', (req, res) => {
         empresa_nombre = ?, empresa_logo = ?, empresa_direccion = ?, empresa_telefono = ?,
         banco_rut = ?, banco_nombre_titular = ?, banco_email = ?, banco_nombre = ?,
         banco_tipo_cuenta = ?, banco_numero_cuenta = ?, idioma = ?,
-        impuesto_boleta = ?, impuesto_iva = ?
+        impuesto_boleta = ?, impuesto_iva = ?,
+        smtp_host = ?, smtp_puerto = ?, smtp_user = ?, smtp_pass = ?
     WHERE id = 1
   `;
 
@@ -44,7 +49,8 @@ router.put('/general', (req, res) => {
     empresa_nombre, empresa_logo, empresa_direccion, empresa_telefono,
     banco_rut, banco_nombre_titular, banco_email, banco_nombre,
     banco_tipo_cuenta, banco_numero_cuenta, idioma,
-    impuesto_boleta, impuesto_iva
+    impuesto_boleta, impuesto_iva,
+    smtp_host, smtp_puerto, smtp_user, smtp_pass
   ], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ updated: this.changes, message: 'Ajustes guardados exitosamente' });
