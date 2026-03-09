@@ -105,6 +105,7 @@ function initDb() {
         prioridad TEXT DEFAULT 'Media', -- 'Baja', 'Media', 'Alta'
         descripcion_problema TEXT,
         notas_tecnicas TEXT,
+        fecha_termino TEXT,
         activo INTEGER DEFAULT 1,
         FOREIGN KEY (cliente_id) REFERENCES clientes (id),
         FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones (id)
@@ -114,6 +115,7 @@ function initDb() {
         // Migración: Añadir columnas si no existen
         db.run("ALTER TABLE tickets ADD COLUMN jornada TEXT DEFAULT 'Sin Asignar'", () => {});
         db.run("ALTER TABLE tickets ADD COLUMN fecha_agendada TEXT", () => {});
+        db.run("ALTER TABLE tickets ADD COLUMN fecha_termino TEXT", () => {});
       }
     });
     

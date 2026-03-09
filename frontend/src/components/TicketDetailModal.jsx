@@ -6,6 +6,12 @@ export default function TicketDetailModal({ ticketId, onClose }) {
   const [ticket, setTicket] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Estados para modo finalizar
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [finishDate, setFinishDate] = useState('');
+  const [finishNotes, setFinishNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -22,6 +28,61 @@ export default function TicketDetailModal({ ticketId, onClose }) {
     };
     loadDetail();
   }, [ticketId]);
+
+  const handleDateChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); 
+    if (value.length > 8) value = value.slice(0, 8);
+    
+    if (value.length >= 2) {
+      const day = parseInt(value.slice(0, 2));
+      if (day > 31) value = '31' + value.slice(2);
+      if (day === 0 && value.length === 2) value = '01';
+    }
+    if (value.length >= 4) {
+      const month = parseInt(value.slice(2, 4));
+      if (month > 12) value = value.slice(0, 2) + '12' + value.slice(4);
+      if (month === 0) value = value.slice(0, 2) + '01' + value.slice(4);
+    }
+    
+    let formatted = value;
+    if (value.length > 4) {
+      formatted = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+    } else if (value.length > 2) {
+      formatted = `${value.slice(0, 2)}/${value.slice(2)}`;
+    }
+    setFinishDate(formatted);
+  };
+
+  const handleFinishWork = async () => {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(finishDate)) {
+      alert('El formato de fecha debe ser DD/MM/AAAA');
+      return;
+    }
+
+    const [d, m, y] = finishDate.split('/').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m - 1 || dateObj.getDate() !== d) {
+      alert('La fecha ingresada no es válida');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        ...ticket,
+        estado: 'Terminado',
+        fecha_termino: finishDate,
+        notas_tecnicas: finishNotes || ticket.notas_tecnicas
+      };
+      await ticketsService.update(ticket.id, payload);
+      onClose(); // Cerrar y recargar agenda
+    } catch (err) {
+      console.error(err);
+      alert('Error al terminar el trabajo');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -72,9 +133,9 @@ export default function TicketDetailModal({ ticketId, onClose }) {
               borderRadius: '20px', 
               fontSize: '0.85rem', 
               fontWeight: 'bold',
-              backgroundColor: ticket.estado === 'En Proceso' ? 'rgba(40, 167, 69, 0.2)' : 'rgba(255, 193, 7, 0.2)',
-              color: ticket.estado === 'En Proceso' ? '#28a745' : '#ffc107',
-              border: `1px solid ${ticket.estado === 'En Proceso' ? '#28a745' : '#ffc107'}`
+              backgroundColor: ticket.estado === 'Terminado' ? 'rgba(0, 123, 255, 0.2)' : (ticket.estado === 'En Proceso' ? 'rgba(40, 167, 69, 0.2)' : 'rgba(255, 193, 7, 0.2)'),
+              color: ticket.estado === 'Terminado' ? '#007bff' : (ticket.estado === 'En Proceso' ? '#28a745' : '#ffc107'),
+              border: `1px solid ${ticket.estado === 'Terminado' ? '#007bff' : (ticket.estado === 'En Proceso' ? '#28a745' : '#ffc107')}`
             }}>
               {ticket.estado}
             </div>
@@ -165,7 +226,7 @@ export default function TicketDetailModal({ ticketId, onClose }) {
           )}
 
           {/* Notas Técnicas / Observaciones */}
-          {ticket.notas_tecnicas && (
+          {ticket.notas_tecnicas && !isFinishing && (
             <div style={{ marginTop: '1.5rem' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8 }}>
                 <AlertCircle size={18} /> Notas Técnicas de Terreno
@@ -175,9 +236,64 @@ export default function TicketDetailModal({ ticketId, onClose }) {
               </div>
             </div>
           )}
+
+          {/* Formulario de Cierre */}
+          {isFinishing && (
+            <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(0, 123, 255, 0.05)', borderRadius: '12px', border: '1px solid rgba(0, 123, 255, 0.3)' }}>
+              <h4 style={{ margin: '0 0 1.5rem 0', color: '#007bff' }}>Finalizar Trabajo</h4>
+              
+              <div className="form-group">
+                <label className="form-label">Fecha de Término (DD/MM/AAAA) (*)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="31/12/2025"
+                  value={finishDate}
+                  onChange={handleDateChange}
+                  maxLength="10"
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <label className="form-label">Detalle de lo realizado (*)</label>
+                <textarea 
+                  className="form-control" 
+                  rows="4"
+                  placeholder="Escriba aquí el reporte técnico de lo realizado para finalizar..."
+                  value={finishNotes}
+                  onChange={e => setFinishNotes(e.target.value)}
+                  required
+                ></textarea>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <button className="btn-primary" style={{ flex: 1, backgroundColor: '#007bff' }} onClick={handleFinishWork} disabled={isSubmitting}>
+                  Confirmar Término (Ticket Cerrado)
+                </button>
+                <button className="btn-secondary" onClick={() => setIsFinishing(false)} disabled={isSubmitting}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #333' }}>
+        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid #333' }}>
+          {!isFinishing && ticket.estado !== 'Terminado' && (
+            <button className="btn-primary" style={{ backgroundColor: '#28a745' }} onClick={() => {
+              setIsFinishing(true);
+              // Pre-poblar fecha con hoy en formato regional
+              const hoy = new Date();
+              const d = String(hoy.getDate()).padStart(2, '0');
+              const m = String(hoy.getMonth() + 1).padStart(2, '0');
+              const y = hoy.getFullYear();
+              setFinishDate(`${d}/${m}/${y}`);
+              setFinishNotes(ticket.notas_tecnicas || '');
+            }}>
+              Terminar Trabajo
+            </button>
+          )}
           <button className="btn-secondary" onClick={onClose}>Cerrar Detalle</button>
         </div>
       </div>
