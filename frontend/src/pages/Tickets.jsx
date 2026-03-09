@@ -130,7 +130,7 @@ export default function Tickets() {
                     <td>{getStatusBadge(ticket.estado)}</td>
                     <td>{getPriorityBadge(ticket.prioridad)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 32px)', gap: '4px', justifyContent: 'end' }}>
                         <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
                           <Printer size={18} />
                         </button>

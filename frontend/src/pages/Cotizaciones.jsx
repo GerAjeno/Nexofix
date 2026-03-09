@@ -92,7 +92,7 @@ export default function Cotizaciones() {
                 <td>{cot.cliente_nombre || 'Cliente Desconocido'}</td>
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
                 <td style={{textAlign: 'right'}}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 32px)', gap: '4px', justifyContent: 'end' }}>
                     <button 
                       onClick={() => handleAccept(cot.id, cot.numero_cotizacion)} 
                       className="icon-btn" 
