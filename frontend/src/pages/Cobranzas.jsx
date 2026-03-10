@@ -11,6 +11,7 @@ export default function Cobranzas() {
   const [filterEstado, setFilterEstado] = useState('Todos');
   const [showPDF, setShowPDF] = useState(false);
   const [selectedCobranzaId, setSelectedCobranzaId] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   // Estados para Registro de Pago
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -30,6 +31,9 @@ export default function Cobranzas() {
 
   useEffect(() => {
     fetchCobranzas();
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleUpdateEstado = async (id, nuevoEstado) => {
@@ -110,7 +114,8 @@ export default function Cobranzas() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>Cargando registros financieros...</div>
       ) : (
-        <div className="table-container">
+        <>
+        <div className="table-container" style={{ display: isMobile ? 'none' : 'block' }}>
           <table className="data-table">
             <thead>
               <tr>
@@ -145,7 +150,7 @@ export default function Cobranzas() {
                           {status.icon} {cob.estado}
                         </div>
                       </td>
-                      <td style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.05rem', color: '#fff' }}>
+                      <td style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.05rem', color: 'var(--text-main)' }}>
                         {formatCLP(cob.monto_total)}
                       </td>
                       <td style={{ textAlign: 'right' }}>
@@ -179,6 +184,60 @@ export default function Cobranzas() {
             </tbody>
           </table>
         </div>
+
+        {isMobile && (
+          <div className="mobile-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            {filtered.length > 0 ? (
+              filtered.map(cob => {
+                const status = getStatusStyle(cob.estado);
+                return (
+                  <div key={cob.id} style={{ background: 'var(--card-bg)', borderRadius: '8px', padding: '1.2rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', borderLeft: `4px solid ${status.color}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                      <strong style={{ fontSize: '1.2rem', color: 'var(--primary)', display: 'block' }}>{cob.numero_cobro}</strong>
+                      <div style={{ 
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '4px 10px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold',
+                        backgroundColor: status.bg, color: status.color
+                      }}>
+                        {status.icon} {cob.estado}
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: '0.4rem', color: 'var(--text-main)', fontSize: '1.05rem', fontWeight: '500' }}>
+                      {cob.cliente_nombre}
+                    </div>
+                    <div style={{ marginBottom: '0.8rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                      <strong>Ticket:</strong> {cob.numero_ticket || '-'} | <strong>Proyecto:</strong> {cob.proyecto_nombre || 'Sin Proyecto'}
+                    </div>
+                    <div style={{ marginBottom: '1.2rem', fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                      {formatCLP(cob.monto_total)}
+                    </div>
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {cob.estado === 'En Cobro' && (
+                        <button className="btn-secondary" style={{ flex: '1 0 calc(50% - 5px)', padding: '10px', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', borderColor: '#28a745', color: '#28a745' }} onClick={() => {
+                          setSelectedForPayment(cob);
+                          setShowPaymentModal(true);
+                        }}>
+                          <CheckCircle size={16} /> Cobrar
+                        </button>
+                      )}
+                      <button className="btn-secondary" style={{ flex: cob.estado === 'En Cobro' ? '1 0 calc(50% - 5px)' : '1 0 calc(50% - 5px)', padding: '10px', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }} onClick={() => { setSelectedCobranzaId(cob.id); setShowPDF(true); }}>
+                        <FileText size={16} /> PDF
+                      </button>
+                      <button className="btn-secondary" style={{ flex: cob.estado === 'En Cobro' ? '1 0 100%' : '1 0 calc(50% - 5px)', padding: '10px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }} onClick={() => handleDelete(cob.id)}>
+                        <Trash2 size={16} /> Quitar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                No se encontraron registros de cobro.
+              </div>
+            )}
+          </div>
+        )}
+        </>
       )}
 
       {showPDF && selectedCobranzaId && (

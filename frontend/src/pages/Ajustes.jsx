@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Settings, Building2, MonitorCog, Users, Calendar, Banknote, ShieldAlert, UploadCloud, Save, CheckCircle2 } from 'lucide-react';
 import { getAjustesGenerales, updateAjustesGenerales, uploadLogo } from '../services/ajustesService';
+import AjustesUsuarios from '../components/AjustesUsuarios';
 
 export default function Ajustes() {
   const [activeTab, setActiveTab] = useState('general');
@@ -8,6 +9,9 @@ export default function Ajustes() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isTablet, setIsTablet] = useState(window.innerWidth <= 1024);
 
   // Estados Formulario General
   const [generalData, setGeneralData] = useState({
@@ -34,6 +38,13 @@ export default function Ajustes() {
 
   useEffect(() => {
     loadAjustes();
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsTablet(window.innerWidth <= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadAjustes = async () => {
@@ -113,35 +124,48 @@ export default function Ajustes() {
 
   return (
     <div className="card ajustes-container" style={{ padding: 0, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', flexDirection: window.innerWidth > 768 ? 'row' : 'column', minHeight: '80vh' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
         
-        {/* Sidebar de Menú Interno de Ajustes */}
+        {/* Barra Superior de Pestañas (Tabs) */}
         <div style={{ 
-          width: window.innerWidth > 768 ? '250px' : '100%', 
+          width: '100%', 
           backgroundColor: 'var(--bg-card)', 
-          borderRight: window.innerWidth > 768 ? '1px solid var(--border-color)' : 'none',
-          borderBottom: window.innerWidth <= 768 ? '1px solid var(--border-color)' : 'none',
-          padding: '1.5rem 0'
+          borderBottom: '1px solid var(--border-color)',
+          padding: '1.5rem 1.5rem 0 1.5rem'
         }}>
-          <h2 style={{ padding: '0 1.5rem', marginBottom: '1.5rem', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Settings size={22} className="text-primary" /> Ajustes
+          <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Settings size={22} className="text-primary" /> Ajustes Globales
           </h2>
           
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <nav style={{ 
+            display: 'flex', 
+            gap: '1.5rem', 
+            overflowX: 'auto',
+            whiteSpace: 'nowrap',
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none'
+          }}>
             <button 
               className={`ajustes-tab ${activeTab === 'general' ? 'active' : ''}`}
               onClick={() => setActiveTab('general')}
-              style={{ padding: '12px 1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: activeTab === 'general' ? 'rgba(52, 152, 219, 0.1)' : 'transparent', borderLeft: activeTab === 'general' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'general' ? 'var(--primary-color)' : 'var(--text-color)', textAlign: 'left', border: 'none', cursor: 'pointer', transition: 'all 0.2s', width: '100%', fontWeight: activeTab === 'general' ? 'bold': 'normal' }}
+              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'general' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'general' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'general' ? '600': 'normal' }}
             >
               <Building2 size={18} /> General
             </button>
-            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '12px 1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', borderLeft: '3px solid transparent', color: 'var(--text-muted)', textAlign: 'left', border: 'none', cursor: 'pointer', opacity: 0.6, width: '100%' }}>
+            <button 
+              className={`ajustes-tab ${activeTab === 'usuarios' ? 'active' : ''}`}
+              onClick={() => setActiveTab('usuarios')}
+              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'usuarios' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'usuarios' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'usuarios' ? '600': 'normal' }}
+            >
+              <ShieldAlert size={18} /> Usuarios
+            </button>
+            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: '3px solid transparent', color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.6 }}>
               <Users size={18} /> Clientes
             </button>
-            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '12px 1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', borderLeft: '3px solid transparent', color: 'var(--text-muted)', textAlign: 'left', border: 'none', cursor: 'pointer', opacity: 0.6, width: '100%' }}>
+            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: '3px solid transparent', color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.6 }}>
               <MonitorCog size={18} /> Sistema
             </button>
-            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '12px 1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', borderLeft: '3px solid transparent', color: 'var(--text-muted)', textAlign: 'left', border: 'none', cursor: 'pointer', opacity: 0.6, width: '100%' }}>
+            <button className="ajustes-tab" onClick={() => alert("Próximamente esta sección.")} style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: '3px solid transparent', color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.6 }}>
               <Calendar size={18} /> Agenda
             </button>
           </nav>
@@ -172,7 +196,7 @@ export default function Ajustes() {
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 1024 ? '1fr 1fr' : '1fr', gap: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: !isTablet ? '1fr 1fr' : '1fr', gap: '2rem' }}>
                 
                 {/* IDENTIDAD DE LA EMPRESA */}
                 <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
@@ -259,12 +283,12 @@ export default function Ajustes() {
                 </div>
 
                 {/* FISCALIDAD Y LOCALIZACIÓN */}
-                <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', gridColumn: window.innerWidth > 1024 ? 'span 2' : 'auto' }}>
+                <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', gridColumn: !isTablet ? 'span 2' : 'auto' }}>
                   <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', color: 'var(--warning-color)' }}>
                     <MonitorCog size={20} /> Fiscalidad y Localización Regional
                   </h4>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr 1fr' : '1fr', gap: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: !isMobile ? '1fr 1fr 1fr' : '1fr', gap: '1.5rem' }}>
                     <div className="form-group">
                       <label>Idioma por Defecto UI</label>
                       <select className="form-control" name="idioma" value={generalData.idioma} onChange={handleChange}>
@@ -292,13 +316,13 @@ export default function Ajustes() {
                 </div>
 
                 {/* CONFIGURACIÓN SERVIDOR DE CORREOS */}
-                <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', gridColumn: window.innerWidth > 1024 ? 'span 2' : 'auto' }}>
+                <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', gridColumn: !isTablet ? 'span 2' : 'auto' }}>
                   <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
                     <MonitorCog size={20} /> Configuración de Servidor de Correos (SMTP)
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Configura tu cuenta de correo para enviar cotizaciones y cobros directamente desde NexoFix.</p>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '2fr 1fr' : '1fr', gap: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: !isMobile ? '2fr 1fr' : '1fr', gap: '1.5rem' }}>
                     <div className="form-group">
                       <label>Servidor SMTP (Ej. smtp.gmail.com)</label>
                       <input type="text" className="form-control" name="smtp_host" value={generalData.smtp_host} onChange={handleChange} placeholder="Host SMTP" />
@@ -310,7 +334,7 @@ export default function Ajustes() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: !isMobile ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '1rem' }}>
                     <div className="form-group">
                       <label>Correo Remitente (Usuario)</label>
                       <input type="email" className="form-control" name="smtp_user" value={generalData.smtp_user} onChange={handleChange} placeholder="tu-correo@empresa.com" />
@@ -325,6 +349,10 @@ export default function Ajustes() {
 
               </div>
             </div>
+          )}
+
+          {activeTab === 'usuarios' && (
+            <AjustesUsuarios />
           )}
 
         </div>

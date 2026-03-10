@@ -91,13 +91,13 @@ function AppLayout() {
               <Route path="/login" element={<Login />} />
 
               {/* Rutas Protegidas */}
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
-              <Route path="/cotizaciones" element={<ProtectedRoute><Cotizaciones /></ProtectedRoute>} />
-              <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
-              <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
-              <Route path="/cobranzas" element={<ProtectedRoute><Cobranzas /></ProtectedRoute>} />
-              <Route path="/ajustes" element={<ProtectedRoute><Ajustes /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Dashboard /></ProtectedRoute>} />
+              <Route path="/clientes" element={<ProtectedRoute allowedRoles={['admin']}><Clientes /></ProtectedRoute>} />
+              <Route path="/cotizaciones" element={<ProtectedRoute allowedRoles={['admin']}><Cotizaciones /></ProtectedRoute>} />
+              <Route path="/tickets" element={<ProtectedRoute allowedRoles={['admin', 'tecnico']}><Tickets /></ProtectedRoute>} />
+              <Route path="/agenda" element={<ProtectedRoute allowedRoles={['admin']}><Agenda /></ProtectedRoute>} />
+              <Route path="/cobranzas" element={<ProtectedRoute allowedRoles={['admin']}><Cobranzas /></ProtectedRoute>} />
+              <Route path="/ajustes" element={<ProtectedRoute allowedRoles={['admin']}><Ajustes /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>

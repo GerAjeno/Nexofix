@@ -8,9 +8,13 @@ export default function Clientes() {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     loadClientes();
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadClientes = async () => {
@@ -65,7 +69,7 @@ export default function Clientes() {
         </div>
       )}
 
-      <div className="table-container">
+      <div className="table-container" style={{ display: isMobile ? 'none' : 'block' }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -106,6 +110,35 @@ export default function Clientes() {
           </tbody>
         </table>
       </div>
+
+      {isMobile && (
+        <div className="mobile-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Cargando...</div>
+          ) : clientes.length > 0 ? (
+            clientes.map(cliente => (
+              <div key={cliente.id} style={{ background: 'var(--card-bg)', borderRadius: '8px', padding: '1.2rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                  <strong style={{ fontSize: '1.2rem', color: 'var(--text-main)', display: 'block' }}>{cliente.nombre}</strong>
+                  <span className="badge" style={{ whiteSpace: 'nowrap' }}>{cliente.tipo}</span>
+                </div>
+                <div style={{ marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                  <strong>RUT:</strong> {cliente.rut}
+                </div>
+                <div style={{ marginBottom: '1.2rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                  <strong>Teléfono:</strong> {cliente.telefono}
+                </div>
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', gap: '10px' }}>
+                  <button className="btn-secondary" style={{ flex: 1, padding: '10px' }} onClick={() => { setSelectedCliente(cliente); setShowModal(true); }}>Ver / Editar</button>
+                  <button className="btn-secondary" style={{ flex: 1, padding: '10px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }} onClick={() => handleDeleteCliente(cliente.id, cliente.nombre)}>Eliminar</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>No hay clientes registrados</div>
+          )}
+        </div>
+      )}
 
       {showModal && (
         <ClienteForm 

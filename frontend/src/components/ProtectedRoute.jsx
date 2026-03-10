@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) {
@@ -16,6 +16,11 @@ export default function ProtectedRoute({ children }) {
   if (!user) {
     // Si no hay usuario logueado, expulsar al Login
     return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.rol)) {
+    // Si no tiene el rol permitido, redirigir a su lugar seguro
+    return <Navigate to={user.rol === 'tecnico' ? '/tickets' : '/'} replace />;
   }
 
   return children;

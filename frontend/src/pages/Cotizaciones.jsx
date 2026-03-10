@@ -15,6 +15,8 @@ export default function Cotizaciones() {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [destinatario, setDestinatario] = useState('');
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   const loadCotizaciones = async () => {
     try {
       const data = await cotizacionesService.getAll();
@@ -41,8 +43,12 @@ export default function Cotizaciones() {
       }
     };
 
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+
     return () => {
       delete window.triggerCotizacionEmail;
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -134,7 +140,7 @@ export default function Cotizaciones() {
         </button>
       </div>
 
-      <div className="table-container">
+      <div className="table-container" style={{ display: isMobile ? 'none' : 'block' }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -205,6 +211,43 @@ export default function Cotizaciones() {
           </tbody>
         </table>
       </div>
+
+      {isMobile && (
+        <div className="mobile-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+          {cotizaciones.length > 0 ? (
+            cotizaciones.map(cot => (
+              <div key={cot.id} style={{ background: 'var(--card-bg)', borderRadius: '8px', padding: '1.2rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', borderTop: '4px solid #10b981' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+                  <strong style={{ fontSize: '1.2rem', color: 'var(--text-main)', display: 'block' }}>N° {cot.numero_cotizacion}</strong>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{new Date(cot.fecha_emision + 'T12:00:00').toLocaleDateString('es-CL')}</span>
+                </div>
+                <div style={{ marginBottom: '0.4rem', color: 'var(--text-main)', fontSize: '1.05rem', fontWeight: '500' }}>
+                  {cot.cliente_nombre || 'Cliente Desconocido'}
+                </div>
+                <div style={{ marginBottom: '0.8rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                  <strong>Proyecto:</strong> {cot.proyecto || '-'}
+                </div>
+                <div style={{ marginBottom: '1.2rem', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                  Total: ${cot.total_final?.toLocaleString('es-CL')}
+                </div>
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button className="btn-secondary" style={{ flex: '1 0 calc(50% - 5px)', padding: '10px', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', borderColor: 'var(--success)', color: 'var(--success)' }} onClick={() => handleAccept(cot.id, cot.numero_cotizacion)}>
+                    <CheckCircle size={16} /> Aceptar
+                  </button>
+                  <button className="btn-secondary" style={{ flex: '1 0 calc(50% - 5px)', padding: '10px', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', borderColor: '#0ea5e9', color: '#0ea5e9' }} onClick={() => handleManualEmail(cot.id)}>
+                    <Mail size={16} /> Enviar
+                  </button>
+                  <button className="btn-secondary" style={{ flex: '1 0 calc(33% - 6px)', padding: '8px' }} onClick={() => handeOpenPdf(cot.id)}>PDF</button>
+                  <button className="btn-secondary" style={{ flex: '1 0 calc(33% - 6px)', padding: '8px' }} onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }}>Editar</button>
+                  <button className="btn-secondary" style={{ flex: '1 0 calc(33% - 7px)', padding: '8px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }} onClick={() => handleDelete(cot.id, cot.numero_cotizacion)}>X</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>No hay cotizaciones registradas.</div>
+          )}
+        </div>
+      )}
 
       {showModal && (
         <CotizacionForm 

@@ -13,6 +13,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import authRoutes from './routes/auth.js';
 import ajustesRoutes from './routes/ajustes.js';
 import emailRoutes from './routes/email.js';
+import usuariosRoutes from './routes/usuarios.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/ajustes', ajustesRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 
 // Endpoint de subida de archivos para notas especiales o imágenes
 app.post('/api/upload', upload.single('imagen'), (req, res) => {

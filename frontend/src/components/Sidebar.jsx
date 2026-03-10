@@ -1,18 +1,22 @@
+import { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Sun, Moon, LayoutDashboard, Users, FileText, ClipboardList, CreditCard, Calendar, Settings } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
+  // Filtrar los items en base al rol
   const navItems = [
-    { path: '/', name: 'Dashboard', icon: LayoutDashboard },
-    { path: '/clientes', name: 'Clientes', icon: Users },
-    { path: '/cotizaciones', name: 'Cotizaciones', icon: FileText },
-    { path: '/tickets', name: 'Tickets', icon: ClipboardList },
-    { path: '/agenda', name: 'Agenda', icon: Calendar },
-    { path: '/cobranzas', name: 'Cobranzas', icon: CreditCard },
-    { path: '/ajustes', name: 'Ajustes', icon: Settings },
-  ];
+    { path: '/', name: 'Dashboard', icon: LayoutDashboard, roles: ['admin'] },
+    { path: '/clientes', name: 'Clientes', icon: Users, roles: ['admin'] },
+    { path: '/cotizaciones', name: 'Cotizaciones', icon: FileText, roles: ['admin'] },
+    { path: '/tickets', name: 'Tickets', icon: ClipboardList, roles: ['admin', 'tecnico'] },
+    { path: '/agenda', name: 'Agenda', icon: Calendar, roles: ['admin'] },
+    { path: '/cobranzas', name: 'Cobranzas', icon: CreditCard, roles: ['admin'] },
+    { path: '/ajustes', name: 'Ajustes', icon: Settings, roles: ['admin'] },
+  ].filter(item => user && item.roles.includes(user.rol));
 
   // Cerrar sidebar en móvil al hacer clic en un link
   const handleLinkClick = () => {

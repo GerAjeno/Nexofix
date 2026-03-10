@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Plus, Trash2, Printer, Edit2, Archive, Calendar, CheckCircle } from 'lucide-react';
 import { ticketsService } from '../services/ticketsService';
 import TicketForm from '../components/TicketForm';
 import TicketPDF from '../components/TicketPDF';
 import ScheduleModal from '../components/ScheduleModal';
 import TicketDetailModal from '../components/TicketDetailModal';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
@@ -14,6 +15,9 @@ export default function Tickets() {
   const [loading, setLoading] = useState(true);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedForSchedule, setSelectedForSchedule] = useState(null);
+  
+  const { user } = useContext(AuthContext);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   // Estados para Detalle/Terminar
   const [showDetail, setShowDetail] = useState(false);
@@ -33,6 +37,10 @@ export default function Tickets() {
 
   useEffect(() => {
     fetchTickets();
+    
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleArchive = async (id) => {
@@ -114,6 +122,48 @@ export default function Tickets() {
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>Cargando trabajos...</div>
+      ) : isMobile ? (
+        <div className="tickets-mobile-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {tickets.length > 0 ? tickets.map(ticket => (
+            <div key={ticket.id} style={{ background: 'var(--card-bg)', borderRadius: '8px', padding: '1.2rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', borderLeft: `4px solid ${ticket.estado === 'Terminado' ? '#007bff' : ticket.estado === 'En Proceso' ? '#28a745' : '#ffc107'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <strong style={{ fontSize: '1.1rem' }}>{ticket.numero_ticket}</strong>
+                {getStatusBadge(ticket.estado)}
+              </div>
+              <div style={{ marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Calendar size={14} />
+                {new Date(ticket.fecha_creacion + 'T12:00:00').toLocaleDateString('es-CL')}
+              </div>
+              <div style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>
+                <strong>Cliente:</strong> {ticket.cliente_nombre}
+              </div>
+              <div style={{ marginBottom: '1rem', fontSize: '0.95rem' }}>
+                <strong>Proyecto:</strong> {ticket.proyecto_nombre || '-'}
+                {getPriorityBadge(ticket.prioridad)}
+              </div>
+              <div style={{ borderTop: '1px solid #eee', paddingTop: '1rem', display: 'flex', gap: '8px' }}>
+                {ticket.estado !== 'Terminado' && (
+                  <button className="btn-primary" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', background: '#28a745', borderColor: '#28a745', padding: '10px' }} onClick={() => { 
+                    setSelectedTicketId(ticket.id);
+                    setFinishMode(true);
+                    setShowDetail(true);
+                  }}>
+                    <CheckCircle size={18} /> Terminar
+                  </button>
+                )}
+                <button className="btn-secondary" style={{ flex: ticket.estado !== 'Terminado' ? 0 : 1, padding: '10px 15px' }} onClick={() => {
+                  setSelectedTicketId(ticket.id);
+                  setFinishMode(false);
+                  setShowDetail(true);
+                }}>
+                  Detalle
+                </button>
+              </div>
+            </div>
+          )) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>No hay trabajos registrados.</div>
+          )}
+        </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
@@ -139,13 +189,17 @@ export default function Tickets() {
                     <td>{getStatusBadge(ticket.estado)}</td>
                     <td>{getPriorityBadge(ticket.prioridad)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 32px)', gap: '4px', justifyContent: 'end' }}>
-                        <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
-                          <Printer size={18} />
-                        </button>
-                        <button className="icon-btn" title="Agendar Trabajo" onClick={() => { setSelectedForSchedule(ticket); setShowScheduleModal(true); }}>
-                          <Calendar size={18} style={{ color: 'var(--primary)' }} />
-                        </button>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                        {user && user.rol === 'admin' && (
+                          <button className="icon-btn" title="Imprimir Orden de Trabajo" onClick={() => handleOpenOT(ticket.id)}>
+                            <Printer size={18} />
+                          </button>
+                        )}
+                        {user && user.rol === 'admin' && (
+                          <button className="icon-btn" title="Agendar Trabajo" onClick={() => { setSelectedForSchedule(ticket); setShowScheduleModal(true); }}>
+                            <Calendar size={18} style={{ color: 'var(--primary)' }} />
+                          </button>
+                        )}
                         {ticket.estado !== 'Terminado' && (
                           <button className="icon-btn" title="Terminar Trabajo" style={{ color: '#28a745' }} onClick={() => { 
                             setSelectedTicketId(ticket.id);
@@ -155,9 +209,11 @@ export default function Tickets() {
                             <CheckCircle size={18} />
                           </button>
                         )}
-                        <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
-                          <Edit2 size={18} />
-                        </button>
+                        {user && user.rol === 'admin' && (
+                          <button className="icon-btn" title="Editar" onClick={() => { setSelectedTicket(ticket); setShowForm(true); }}>
+                            <Edit2 size={18} />
+                          </button>
+                        )}
                         <button className="icon-btn" title="Ver Detalle" onClick={() => {
                           setSelectedTicketId(ticket.id);
                           setFinishMode(false);
@@ -165,16 +221,18 @@ export default function Tickets() {
                         }}>
                           <Plus size={18} style={{ transform: 'rotate(45deg)', opacity: 0.6 }} />
                         </button>
-                        <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
-                          <Archive size={18} />
-                        </button>
+                        {user && user.rol === 'admin' && (
+                          <button className="icon-btn delete" title="Archivar" onClick={() => handleArchive(ticket.id)}>
+                            <Archive size={18} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                     No hay trabajos registrados.
                   </td>
                 </tr>
