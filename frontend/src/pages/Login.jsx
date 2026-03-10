@@ -4,30 +4,30 @@ import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!username || !password) {
       setError('Por favor, ingresa tus credenciales.');
       return;
     }
 
     setIsSubmitting(true);
-    
+
     // Simular un poco de tiempo de carga para efecto premium
     await new Promise(r => setTimeout(r, 600));
 
     const result = await login(username, password);
-    
+
     if (result.success) {
       navigate('/'); // Ir al Dashboard si el login es exitoso
     } else {
@@ -37,11 +37,11 @@ export default function Login() {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: '#0f172a',
       backgroundImage: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)',
       padding: '1rem'
@@ -56,11 +56,11 @@ export default function Login() {
         padding: '2.5rem 2rem',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       }}>
-        
+
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            justifyContent: 'center', 
+          <div style={{
+            display: 'inline-flex',
+            justifyContent: 'center',
             alignItems: 'center',
             width: '64px',
             height: '64px',
@@ -77,12 +77,12 @@ export default function Login() {
         </div>
 
         {error && (
-          <div style={{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-            border: '1px solid rgba(239, 68, 68, 0.3)', 
-            color: '#ef4444', 
-            padding: '12px 16px', 
-            borderRadius: '8px', 
+          <div style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
+            padding: '12px 16px',
+            borderRadius: '8px',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'flex-start',
@@ -99,8 +99,8 @@ export default function Login() {
             <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Usuario</label>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 style={{
@@ -124,8 +124,8 @@ export default function Login() {
             <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Contraseña</label>
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
@@ -145,8 +145,8 @@ export default function Login() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
             style={{
               width: '100%',
