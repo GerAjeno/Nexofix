@@ -16,5 +16,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['firebase']
+  },
+  preview: {
+    allowedHosts: ['nexofix.ger-cloud.cc']
   }
 })
