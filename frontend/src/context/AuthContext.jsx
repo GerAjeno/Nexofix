@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('nexofix_user');
     const storedToken = localStorage.getItem('nexofix_token');
-    
+
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
     }
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nexofix_token', data.token);
       localStorage.setItem('nexofix_user', JSON.stringify(data.user));
       setUser(data.user);
-      
+
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
