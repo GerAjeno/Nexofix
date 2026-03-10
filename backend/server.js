@@ -19,7 +19,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = ['https://ger-cloud.cc', 'https://nexofix.ger-cloud.cc', 'http://localhost:5173'];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Permitir peticiones sin origen (como apps móviles o curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'El policy de CORS para este sitio no permite acceso desde el origen especificado.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
 app.use(express.json());
 
 // Configurar el directorio para subida de archivos
@@ -56,8 +67,8 @@ app.post('/api/upload', upload.single('imagen'), (req, res) => {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
   // Retornar la ruta relativa al servidor para que el frontend pueda registrarla
-  res.status(200).json({ 
-    message: 'Imagen subida exitosamente', 
+  res.status(200).json({
+    message: 'Imagen subida exitosamente',
     filename: req.file.filename,
     path: `/uploads/${req.file.filename}`
   });

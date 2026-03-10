@@ -5,7 +5,7 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-const JWT_SECRET = 'nexofix_super_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'nexofix_prod_secret_2026_default';
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {
@@ -18,12 +18,13 @@ router.post('/login', (req, res) => {
   // Buscar usuario en SQLite
   db.get("SELECT * FROM usuarios WHERE username = ? AND activo = 1", [username], async (err, authUser) => {
     if (err) {
-      console.error("Error en login:", err);
-      return res.status(500).json({ error: 'Error interno del servidor' });
+      console.error("Error crítico en login:", err);
+      return res.status(500).json({ error: 'Error interno del servidor. Intente más tarde.' });
     }
 
     if (!authUser) {
-      return res.status(401).json({ error: 'Credenciales inválidas' }); // Evitar decir "usuario no existe" por seguridad
+      // Mensaje genérico para no revelar si el usuario existe
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     }
 
     // Verificar contraseña encriptada

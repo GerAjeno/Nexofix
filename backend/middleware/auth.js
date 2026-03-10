@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-// Llave secreta para firmar los JWT (debe coincidir con la de auth.js)
-const JWT_SECRET = 'nexofix_super_secret_key_2026';
+// Llave secreta para firmar los JWT (Cargada desde el entorno por seguridad)
+const JWT_SECRET = process.env.JWT_SECRET || 'nexofix_prod_secret_2026_default';
 
 /**
  * Middleware para verificar el token JWT en las cabeceras de la petición.

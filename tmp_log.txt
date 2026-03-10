@@ -1,3 +1,0 @@
-[08-03-2026 17:04:18] USER: 2 fallos que para mi son criticos.
-1.- Quiero que el Moo oscuro sea apto para pantallas AMOLED o pantallas OLED
-2.- Observa la imagen adjunta, la informacion aparece abajo del Sidebar y no al lado, verifica que esta mal hecho
