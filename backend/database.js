@@ -113,12 +113,12 @@ function initDb() {
     `, (err) => {
       if (!err) {
         // Migración: Añadir columnas si no existen
-        db.run("ALTER TABLE tickets ADD COLUMN jornada TEXT DEFAULT 'Sin Asignar'", () => {});
-        db.run("ALTER TABLE tickets ADD COLUMN fecha_agendada TEXT", () => {});
-        db.run("ALTER TABLE tickets ADD COLUMN fecha_termino TEXT", () => {});
+        db.run("ALTER TABLE tickets ADD COLUMN jornada TEXT DEFAULT 'Sin Asignar'", () => { });
+        db.run("ALTER TABLE tickets ADD COLUMN fecha_agendada TEXT", () => { });
+        db.run("ALTER TABLE tickets ADD COLUMN fecha_termino TEXT", () => { });
       }
     });
-    
+
     db.run(`
       CREATE TABLE IF NOT EXISTS cobranzas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,6 +135,9 @@ function initDb() {
         FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id)
       )
     `);
+
+    // Migration: ensure requiere_reset column exists
+    db.run("ALTER TABLE usuarios ADD COLUMN requiere_reset INTEGER DEFAULT 0", () => { });
 
     console.log('Database tables initialized.');
   });

@@ -8,8 +8,12 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFirstSetup, setShowFirstSetup] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const { login } = useContext(AuthContext);
+  const { login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -29,9 +33,67 @@ export default function Login() {
     const result = await login(username, password);
 
     if (result.success) {
-      navigate('/'); // Ir al Dashboard si el login es exitoso
+      // Verificar si requiere reset
+      const storedUser = JSON.parse(localStorage.getItem('nexofix_user'));
+      if (storedUser?.requiere_reset === 1) {
+        setNewUsername(storedUser.username);
+        setShowFirstSetup(true);
+        setIsSubmitting(false);
+      } else {
+        navigate('/');
+      }
     } else {
       setError(result.error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitReset = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!newPassword) {
+      setError('La nueva contraseña es obligatoria.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem('nexofix_token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/first-setup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ newUsername, newPassword })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al actualizar credenciales');
+      }
+
+      alert('¡Configuración completada con éxito! Por favor, inicia sesión con tus nuevas credenciales.');
+      logout(); // Limpiar sesión actual para obligar login nuevo
+      setShowFirstSetup(false);
+      setUsername(newUsername);
+      setPassword('');
+      setIsSubmitting(false);
+    } catch (err) {
+      setError(err.message);
       setIsSubmitting(false);
     }
   };
@@ -94,85 +156,201 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Usuario</label>
-            <div style={{ position: 'relative' }}>
-              <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{
-                  width: '100%',
-                  backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  padding: '12px 16px 12px 45px',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'all 0.2s'
-                }}
-                disabled={isSubmitting}
-                placeholder="Ingresa tu usuario"
-              />
+        {showFirstSetup ? (
+          <form onSubmit={handleSubmitReset}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ color: '#e67e22', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                <AlertCircle size={20} />
+                <strong style={{ fontSize: '1.1rem' }}>Configuración Inicial</strong>
+              </div>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                Por seguridad, debes personalizar tus credenciales en tu primer ingreso.
+              </p>
             </div>
-          </div>
 
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Contraseña</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  padding: '12px 16px 12px 45px',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'all 0.2s'
-                }}
-                disabled={isSubmitting}
-                placeholder="••••••••"
-              />
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Nuevo Nombre de Usuario (Opcional)</label>
+              <div style={{ position: 'relative' }}>
+                <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px 16px 12px 45px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  disabled={isSubmitting}
+                  placeholder="Nuevo nombre de usuario..."
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              width: '100%',
-              backgroundColor: '#3498db',
-              backgroundImage: 'linear-gradient(to right, #3498db, #2980b9)',
-              color: '#fff',
-              border: 'none',
-              padding: '14px',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.7 : 1,
-              transition: 'all 0.2s',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-          >
-            {isSubmitting ? (
-              <div className="loading-spinner" style={{ width: '20px', height: '20px', borderWidth: '2px', borderColor: '#fff', borderTopColor: 'transparent' }}></div>
-            ) : (
-              'Acceder al Sistema'
-            )}
-          </button>
-        </form>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Nueva Contraseña</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px 16px 12px 45px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  disabled={isSubmitting}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Confirmar Nueva Contraseña</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px 16px 12px 45px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  disabled={isSubmitting}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                backgroundColor: '#e67e22',
+                backgroundImage: 'linear-gradient(to right, #e67e22, #d35400)',
+                color: '#fff',
+                border: 'none',
+                padding: '14px',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {isSubmitting ? 'Guardando...' : 'Confirmar y Empezar'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowFirstSetup(false); logout(); }}
+              style={{ width: '100%', background: 'none', border: 'none', color: '#64748b', marginTop: '1rem', fontSize: '0.9rem', cursor: 'pointer' }}
+            >
+              Cancelar
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Usuario</label>
+              <div style={{ position: 'relative' }}>
+                <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px 16px 12px 45px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  disabled={isSubmitting}
+                  placeholder="Ingresa tu usuario"
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: '500' }}>Contraseña</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px 16px 12px 45px',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  disabled={isSubmitting}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                backgroundColor: '#3498db',
+                backgroundImage: 'linear-gradient(to right, #3498db, #2980b9)',
+                color: '#fff',
+                border: 'none',
+                padding: '14px',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                opacity: isSubmitting ? 0.7 : 1,
+                transition: 'all 0.2s',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              {isSubmitting ? (
+                <div className="loading-spinner" style={{ width: '20px', height: '20px', borderWidth: '2px', borderColor: '#fff', borderTopColor: 'transparent' }}></div>
+              ) : (
+                'Acceder al Sistema'
+              )}
+            </button>
+          </form>
+        )}
 
         <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.75rem', marginTop: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px' }}>
           <Lock size={12} /> Acceso Restringido - NexoFix 2026
