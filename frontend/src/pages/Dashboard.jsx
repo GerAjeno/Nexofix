@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
-  Users, 
-  FileCheck, 
-  Clock, 
-  AlertCircle, 
-  TrendingUp, 
-  DollarSign, 
-  Calendar, 
+import {
+  Users,
+  FileCheck,
+  Clock,
+  AlertCircle,
+  TrendingUp,
+  DollarSign,
+  Calendar,
   ArrowRight,
   ClipboardList,
   CheckCircle2
@@ -19,7 +19,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/dashboard/stats');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/dashboard/stats`);
         const data = await res.json();
         setStats(data);
       } catch (err) {
@@ -68,7 +68,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', marginTop: '1rem', opacity: 0.6, display: 'flex', alignItems: 'center', gap: '4px' }}>
-             <TrendingUp size={12} /> Gestión activa de cartera
+            <TrendingUp size={12} /> Gestión activa de cartera
           </p>
         </div>
 
@@ -125,11 +125,11 @@ export default function Dashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {stats.proximosTrabajos.length > 0 ? (
               stats.proximosTrabajos.map(t => (
-                <div key={t.id} style={{ 
-                  padding: '12px', 
-                  background: 'rgba(255,255,255,0.03)', 
-                  borderRadius: '10px', 
-                  display: 'flex', 
+                <div key={t.id} style={{
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderRadius: '10px',
+                  display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   border: '1px solid rgba(255,255,255,0.05)'
@@ -162,18 +162,18 @@ export default function Dashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {stats.actividadReciente.length > 0 ? (
               stats.actividadReciente.map((a, i) => (
-                <div key={i} style={{ 
-                  padding: '12px', 
-                  background: 'rgba(255,255,255,0.03)', 
-                  borderRadius: '10px', 
-                  display: 'flex', 
+                <div key={i} style={{
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderRadius: '10px',
+                  display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ 
-                      padding: '8px', 
-                      background: a.estado === 'Cobrado' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(241, 196, 15, 0.1)', 
+                    <div style={{
+                      padding: '8px',
+                      background: a.estado === 'Cobrado' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(241, 196, 15, 0.1)',
                       borderRadius: '50%',
                       color: a.estado === 'Cobrado' ? '#2ecc71' : '#f1c40f'
                     }}>
