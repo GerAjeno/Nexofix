@@ -17,7 +17,7 @@ export default function AjustesUsuarios() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('nexofix_token');
-      const res = await fetch('http://localhost:3000/api/usuarios', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -61,7 +61,7 @@ export default function AjustesUsuarios() {
 
     try {
       const token = localStorage.getItem('nexofix_token');
-      const res = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -86,7 +86,7 @@ export default function AjustesUsuarios() {
           payload.password = formData.password;
         }
 
-        const res = await fetch(`http://localhost:3000/api/usuarios/${formData.id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios/${formData.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
@@ -101,7 +101,7 @@ export default function AjustesUsuarios() {
           throw new Error('El nombre de usuario y la contraseña son obligatorios');
         }
         
-        const res = await fetch(`http://localhost:3000/api/usuarios`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ 

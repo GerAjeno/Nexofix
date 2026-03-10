@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/cotizaciones';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/cotizaciones`;
 
 export const cotizacionesService = {
   getAll: async () => {

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/ajustes';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/ajustes`;
 
 export const getAjustesGenerales = async () => {
   const token = localStorage.getItem('nexofix_token');
@@ -30,7 +30,7 @@ export const uploadLogo = async (file) => {
   const formData = new FormData();
   formData.append('imagen', file);
   
-  const response = await fetch('http://localhost:3000/api/upload', {
+  const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/upload', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`

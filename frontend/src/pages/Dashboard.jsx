@@ -19,7 +19,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/dashboard/stats');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/dashboard/stats');
         const data = await res.json();
         setStats(data);
       } catch (err) {
