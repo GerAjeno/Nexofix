@@ -81,7 +81,7 @@ export default function AjustesUsuarios() {
     try {
       if (formData.id) {
         // Editando
-        const payload = { rol: formData.rol, activo: formData.activo };
+        const payload = { rol: formData.rol, activo: formData.activo, username: formData.username.trim() };
         if (formData.password.trim() !== '') {
           payload.password = formData.password;
         }
@@ -249,11 +249,9 @@ export default function AjustesUsuarios() {
                     className="form-control"
                     value={formData.username}
                     onChange={e => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
-                    disabled={!!formData.id}
                     required
                     autoComplete="off"
                   />
-                  {!!formData.id && <small style={{ color: 'var(--text-muted)' }}>El nombre no puede cambiarse. Si necesitas otro nombre, crea un nuevo perfil.</small>}
                 </div>
 
                 <div className="form-group" style={{ marginTop: '1rem' }}>

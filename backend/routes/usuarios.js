@@ -53,27 +53,37 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// PUT /api/usuarios/:id - Cambiar estado (activo/inactivo), rol o contraseña
+// PUT /api/usuarios/:id - Cambiar username, estado (activo/inactivo), rol o contraseña
 router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   const { id } = req.params;
-  const { password, rol, activo } = req.body;
+  const { password, rol, activo, username } = req.body;
 
   try {
     if (password) {
       // Si enviaron contraseña, actualizamos todo (incluida contraseña)
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(password, salt);
-      
-      const sql = "UPDATE usuarios SET password_hash = ?, rol = COALESCE(?, rol), activo = COALESCE(?, activo) WHERE id = ?";
-      db.run(sql, [hash, rol, activo, id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
+
+      const sql = "UPDATE usuarios SET username = COALESCE(?, username), password_hash = ?, rol = COALESCE(?, rol), activo = COALESCE(?, activo) WHERE id = ?";
+      db.run(sql, [username, hash, rol, activo, id], function (err) {
+        if (err) {
+          if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+          }
+          return res.status(500).json({ error: err.message });
+        }
         res.json({ message: 'Usuario y credenciales actualizados' });
       });
     } else {
-      // Solo actualizar rol o estado
-      const sql = "UPDATE usuarios SET rol = COALESCE(?, rol), activo = COALESCE(?, activo) WHERE id = ?";
-      db.run(sql, [rol, activo, id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
+      // Solo actualizar username, rol o estado
+      const sql = "UPDATE usuarios SET username = COALESCE(?, username), rol = COALESCE(?, rol), activo = COALESCE(?, activo) WHERE id = ?";
+      db.run(sql, [username, rol, activo, id], function (err) {
+        if (err) {
+          if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+          }
+          return res.status(500).json({ error: err.message });
+        }
         res.json({ message: 'Usuario actualizado' });
       });
     }
@@ -85,7 +95,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 // DELETE /api/usuarios/:id - Eliminar usuario
 router.delete('/:id', verifyToken, verifyAdmin, (req, res) => {
   const { id } = req.params;
-  db.run("DELETE FROM usuarios WHERE id = ?", [id], function(err) {
+  db.run("DELETE FROM usuarios WHERE id = ?", [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Usuario eliminado', changes: this.changes });
   });
