@@ -5,7 +5,7 @@ export default function AjustesUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Modal de formulario
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,7 +17,7 @@ export default function AjustesUsuarios() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('nexofix_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -34,19 +34,19 @@ export default function AjustesUsuarios() {
 
   useEffect(() => {
     loadUsuarios();
-    
+
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleEdit = (user) => {
-    setFormData({ 
-      id: user.id, 
-      username: user.username, 
+    setFormData({
+      id: user.id,
+      username: user.username,
       password: '', // En edición está vacío por defecto (para no cambiarla si no se quiere)
-      rol: user.rol, 
-      activo: user.activo 
+      rol: user.rol,
+      activo: user.activo
     });
     setShowModal(true);
   };
@@ -57,7 +57,7 @@ export default function AjustesUsuarios() {
   };
 
   const handleDelete = async (id, username) => {
-    if(!window.confirm(`¿Estás seguro que deseas eliminar el usuario "${username}" definitivamente? Esta acción no se puede deshacer.`)) return;
+    if (!window.confirm(`¿Estás seguro que deseas eliminar el usuario "${username}" definitivamente? Esta acción no se puede deshacer.`)) return;
 
     try {
       const token = localStorage.getItem('nexofix_token');
@@ -91,7 +91,7 @@ export default function AjustesUsuarios() {
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
-        
+
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error al actualizar');
 
@@ -100,14 +100,14 @@ export default function AjustesUsuarios() {
         if (!formData.username || !formData.password) {
           throw new Error('El nombre de usuario y la contraseña son obligatorios');
         }
-        
+
         const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/usuarios`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ 
-            username: formData.username.trim(), 
-            password: formData.password, 
-            rol: formData.rol 
+          body: JSON.stringify({
+            username: formData.username.trim(),
+            password: formData.password,
+            rol: formData.rol
           })
         });
 
@@ -133,7 +133,7 @@ export default function AjustesUsuarios() {
           <h3 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Gestión de Accesos (Usuarios)</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Crea credenciales para Técnicos u otros Administradores del sistema NexoFix.</p>
         </div>
-        <button 
+        <button
           onClick={handleCreate}
           className="btn btn-primary"
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -151,7 +151,7 @@ export default function AjustesUsuarios() {
                 <span style={{ color: 'var(--text-muted)' }}>#{u.id}</span>
               </div>
               <div style={{ marginBottom: '0.6rem' }}>
-                <span style={{ 
+                <span style={{
                   padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold',
                   background: u.rol === 'admin' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(52, 152, 219, 0.1)',
                   color: u.rol === 'admin' ? '#e74c3c' : '#3498db'
@@ -160,8 +160,8 @@ export default function AjustesUsuarios() {
                 </span>
               </div>
               <div style={{ marginBottom: '1rem' }}>
-                {u.activo ? 
-                  <span style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: '500' }}><CheckCircle2 size={16}/> Activo</span> : 
+                {u.activo ?
+                  <span style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: '500' }}><CheckCircle2 size={16} /> Activo</span> :
                   <span style={{ color: '#e74c3c', fontSize: '0.9rem', fontWeight: '500' }}>Suspendido</span>}
               </div>
               <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', gap: '10px' }}>
@@ -189,7 +189,7 @@ export default function AjustesUsuarios() {
                 <th>Usuario</th>
                 <th>Rol (Perfil)</th>
                 <th>Estado</th>
-                <th style={{textAlign: 'right'}}>Acciones</th>
+                <th style={{ textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -198,9 +198,9 @@ export default function AjustesUsuarios() {
                   <td style={{ color: 'var(--text-muted)' }}>#{u.id}</td>
                   <td style={{ fontWeight: 'bold' }}>{u.username}</td>
                   <td>
-                    <span style={{ 
-                      padding: '4px 10px', 
-                      borderRadius: '12px', 
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: '12px',
                       fontSize: '11px',
                       fontWeight: 'bold',
                       background: u.rol === 'admin' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(52, 152, 219, 0.1)',
@@ -210,11 +210,11 @@ export default function AjustesUsuarios() {
                     </span>
                   </td>
                   <td>
-                    {u.activo ? 
-                      <span style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle2 size={16}/> Activo</span> : 
+                    {u.activo ?
+                      <span style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle2 size={16} /> Activo</span> :
                       <span style={{ color: '#e74c3c' }}>Suspendido</span>}
                   </td>
-                  <td style={{textAlign: 'right'}}>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(u)} className="icon-btn" title="Editar"><Edit2 size={18} /></button>
                     {/* Evitar borrar el admin #1 accidentalmente (si fuera necesario podemos blindarlo aqui) */}
                     {u.id !== 1 && (
@@ -236,19 +236,19 @@ export default function AjustesUsuarios() {
           <div className="modal-content" style={{ maxWidth: '400px' }}>
             <div className="modal-header">
               <h3 style={{ margin: 0 }}>{formData.id ? 'Editar Accesos de Usuario' : 'Crear Nuevo Personal'}</h3>
-              <button className="btn-close" onClick={() => setShowModal(false)}><X size={20}/></button>
+              <button className="btn-close" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <div className="modal-body">
               {error && <div className="error-message" style={{ marginBottom: '1rem', padding: '10px', background: 'rgba(231,76,60,0.1)', color: '#e74c3c', borderRadius: '4px', fontSize: '13px' }}>{error}</div>}
               <form id="user-form" onSubmit={handleSave}>
-                
+
                 <div className="form-group">
                   <label className="form-label">Nombre de Usuario (Login)</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
+                  <input
+                    type="text"
+                    className="form-control"
                     value={formData.username}
-                    onChange={e => setFormData({...formData, username: e.target.value.toLowerCase()})}
+                    onChange={e => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
                     disabled={!!formData.id}
                     required
                     autoComplete="off"
@@ -258,22 +258,22 @@ export default function AjustesUsuarios() {
 
                 <div className="form-group" style={{ marginTop: '1rem' }}>
                   <label className="form-label">{formData.id ? 'Nueva Contraseña (Opcional)' : 'Contraseña Inicial'}</label>
-                  <input 
-                    type="password" 
-                    className="form-control" 
+                  <input
+                    type="password"
+                    className="form-control"
                     placeholder={formData.id ? "Dejar en blanco para no cambiar..." : "Mínimo 6 caracteres..."}
                     value={formData.password}
-                    onChange={e => setFormData({...formData, password: e.target.value})}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
                     required={!formData.id}
                   />
                 </div>
 
                 <div className="form-group" style={{ marginTop: '1rem' }}>
                   <label className="form-label">Rol y Permisos</label>
-                  <select 
-                    className="form-control" 
+                  <select
+                    className="form-control"
                     value={formData.rol}
-                    onChange={e => setFormData({...formData, rol: e.target.value})}
+                    onChange={e => setFormData({ ...formData, rol: e.target.value })}
                     disabled={formData.id === 1} // No permitimos quitarle el admin al root
                   >
                     <option value="tecnico">Técnico (Solo uso móvil para Tickets)</option>
@@ -284,17 +284,17 @@ export default function AjustesUsuarios() {
                 {!!formData.id && formData.id !== 1 && (
                   <div className="form-group" style={{ marginTop: '1rem' }}>
                     <label className="form-label">Estado de la cuenta</label>
-                    <select 
-                      className="form-control" 
+                    <select
+                      className="form-control"
                       value={formData.activo}
-                      onChange={e => setFormData({...formData, activo: parseInt(e.target.value)})}
+                      onChange={e => setFormData({ ...formData, activo: parseInt(e.target.value) })}
                     >
                       <option value={1}>Habilitado (Acceso normal)</option>
                       <option value={0}>Suspendido (No podrá iniciar sesión)</option>
                     </select>
                   </div>
                 )}
-                
+
               </form>
             </div>
             <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>

@@ -9,7 +9,7 @@ export default function Cotizaciones() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCotizacion, setSelectedCotizacion] = useState(null);
   const [pdfData, setPdfData] = useState(null);
-  
+
   // Estados para envío silencioso de email
   const [emailData, setEmailData] = useState(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -28,7 +28,7 @@ export default function Cotizaciones() {
 
   useEffect(() => {
     loadCotizaciones();
-    
+
     // Registrar el listener global que permite al modal invocar el envío de correos al cerrarse
     window.triggerCotizacionEmail = async (cotizacionId, emailTo) => {
       try {
@@ -57,7 +57,7 @@ export default function Cotizaciones() {
       try {
         await cotizacionesService.delete(id);
         loadCotizaciones();
-      } catch(err) {
+      } catch (err) {
         alert('Error al archivar la cotización');
       }
     }
@@ -106,7 +106,7 @@ export default function Cotizaciones() {
         numeroCotizacion: emailData.numero_cotizacion
       };
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/email/enviar-cotizacion', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/email/enviar-cotizacion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -149,7 +149,7 @@ export default function Cotizaciones() {
               <th>Proyecto</th>
               <th>Cliente</th>
               <th>Total</th>
-              <th style={{textAlign: 'right'}}>Acciones</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -160,41 +160,41 @@ export default function Cotizaciones() {
                 <td style={{ fontWeight: '500', color: 'var(--primary)' }}>{cot.proyecto || '-'}</td>
                 <td>{cot.cliente_nombre || 'Cliente Desconocido'}</td>
                 <td>${cot.total_final?.toLocaleString('es-CL')}</td>
-                <td style={{textAlign: 'right'}}>
+                <td style={{ textAlign: 'right' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 32px)', gap: '4px', justifyContent: 'end' }}>
-                    <button 
-                      onClick={() => handleAccept(cot.id, cot.numero_cotizacion)} 
-                      className="icon-btn" 
+                    <button
+                      onClick={() => handleAccept(cot.id, cot.numero_cotizacion)}
+                      className="icon-btn"
                       style={{ color: 'var(--success)' }}
                       title="Aceptar Cotización (Crear Ticket)"
                     >
                       <CheckCircle size={18} />
                     </button>
-                    <button 
-                      onClick={() => handeOpenPdf(cot.id)} 
-                      className="icon-btn" 
+                    <button
+                      onClick={() => handeOpenPdf(cot.id)}
+                      className="icon-btn"
                       title="Ver / Generar PDF"
                     >
                       <Printer size={18} />
                     </button>
-                    <button 
-                      onClick={() => handleManualEmail(cot.id)} 
-                      className="icon-btn" 
+                    <button
+                      onClick={() => handleManualEmail(cot.id)}
+                      className="icon-btn"
                       style={{ color: '#0ea5e9' }}
                       title="Enviar por Correo"
                     >
                       <Mail size={18} />
                     </button>
-                    <button 
-                      onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }} 
-                      className="icon-btn" 
+                    <button
+                      onClick={() => { setSelectedCotizacion(cot); setShowModal(true); }}
+                      className="icon-btn"
                       title="Editar"
                     >
                       <Edit2 size={18} />
                     </button>
-                    <button 
-                      onClick={() => handleDelete(cot.id, cot.numero_cotizacion)} 
-                      className="icon-btn delete" 
+                    <button
+                      onClick={() => handleDelete(cot.id, cot.numero_cotizacion)}
+                      className="icon-btn delete"
                       title="Archivar"
                     >
                       <Trash2 size={18} />
@@ -250,24 +250,24 @@ export default function Cotizaciones() {
       )}
 
       {showModal && (
-        <CotizacionForm 
+        <CotizacionForm
           cotizacion={selectedCotizacion}
-          onClose={() => { setShowModal(false); setSelectedCotizacion(null); }} 
+          onClose={() => { setShowModal(false); setSelectedCotizacion(null); }}
           onSave={loadCotizaciones}
         />
       )}
 
       {pdfData && (
-        <CotizacionPDF 
-          data={pdfData} 
-          onClose={() => setPdfData(null)} 
+        <CotizacionPDF
+          data={pdfData}
+          onClose={() => setPdfData(null)}
         />
       )}
 
       {/* Renderizador PDF estricto y oculto para el Email */}
       {emailData && (
-        <CotizacionPDF 
-          data={emailData} 
+        <CotizacionPDF
+          data={emailData}
           onClose={() => setEmailData(null)}
           modoOculto={true}
           onEmailReady={(base64) => processEmailSend(base64)}
