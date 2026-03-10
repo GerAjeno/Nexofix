@@ -53,7 +53,7 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// PUT /api/usuarios/:id - Cambiar username, estado (activo/inactivo), rol o contraseña
+// PUT /api/usuarios/:id - Cambiar estado (activo/inactivo), rol o contraseña
 router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   const { id } = req.params;
   const { password, rol, activo, username } = req.body;

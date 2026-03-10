@@ -2,7 +2,18 @@
 
 Este documento registra cronológicamente todos los cambios estructurales, correcciones de errores y despliegue de nuevas funcionalidades técnicas realizados en la plataforma NexoFix.
 
+
+### [2026-03-10 13:20] 🔐 Seguridad: Cambio de Nombre de Usuario
+- **Componentes**: `AjustesUsuarios.jsx` (Frontend), `usuarios.js` (Backend)
+- **Funcionalidad**: Se habilitó la posibilidad de cambiar el nombre de usuario (login) desde el panel de gestión.
+- **Backend**: Actualización de la ruta `PUT /api/usuarios/:id` para procesar `username` con validación de duplicados (UNIQUE constraint).
+- **Frontend**: 
+  - Desbloqueo del campo de texto en el formulario de edición.
+  - Implementación de alerta de seguridad advirtiendo sobre la posible pérdida de sesión si se cambia el nombre del administrador actual.
+- **Seguridad**: Mejora la postura de seguridad al permitir la personalización de la cuenta `admin` por defecto.
+
 ---
+
 
 ### [2026-03-09 01:30] ✅ Actualización de Historial Operativo
 - **Archivo**: `conversation_history.txt`

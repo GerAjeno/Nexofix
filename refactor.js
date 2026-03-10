@@ -1,60 +1,54 @@
 import fs from 'fs';
 import path from 'path';
 
-function findFiles(dir, files = []) {
-    const list = fs.readdirSync(dir);
-    for (const file of list) {
-        const fullPath = path.join(dir, file);
-        if (fs.statSync(fullPath).isDirectory()) {
-            findFiles(fullPath, files);
-        } else if (fullPath.endsWith('.jsx') || fullPath.endsWith('.js')) {
-            files.push(fullPath);
-        }
-    }
-    return files;
-}
+// Ruta al directorio src del frontend
+const srcDir = path.join(process.cwd(), 'frontend', 'src');
 
-const files = findFiles(path.join(process.cwd(), 'src'));
+// Función recursiva para leer archivos
+function getAllFiles(dirPath, arrayOfFiles) {
+    const files = fs.readdirSync(dirPath);
 
-for (const file of files) {
-    if (file.includes('firebase.js') || file.includes('pdfGenerator.js') || file.includes('refactor.js')) {
-        continue;
-    }
+    arrayOfFiles = arrayOfFiles || [];
 
-    let content = fs.readFileSync(file, 'utf8');
-    let changed = false;
-
-    // Find firebase imports
-    const fbRegex = /import\s+\{([^}]+)\}\s+from\s+['"]firebase\/(firestore|auth|storage|app)['"];?\n?/g;
-    let match;
-    let importsToAdd = [];
-
-    while ((match = fbRegex.exec(content)) !== null) {
-        let imports = match[1].split(',').map(s => s.trim()).filter(s => s);
-        importsToAdd.push(...imports);
-        changed = true;
-    }
-
-    if (changed) {
-        // Remove the original firebase imports
-        content = content.replace(fbRegex, '');
-
-        // Find the existing local firebase import
-        const localFbRegex = /import\s+\{([^}]+)\}\s+from\s+['"](\.\.\/firebase|\.\/firebase)['"];?\n?/;
-        const localMatch = content.match(localFbRegex);
-
-        if (localMatch) {
-            let existingImports = localMatch[1].split(',').map(s => s.trim());
-            let allImports = [...new Set([...existingImports, ...importsToAdd])];
-            content = content.replace(localFbRegex, `import { ${allImports.join(', ')} } from '${localMatch[2]}';\n`);
+    files.forEach(function (file) {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
         } else {
-            // Need to know relative path
-            const relPath = file.includes('pages') || file.includes('components') || file.includes('utils') ? '../firebase' : './firebase';
-            let allImports = [...new Set(importsToAdd)];
-            content = `import { ${allImports.join(', ')} } from '${relPath}';\n` + content;
+            // Solo procesar archivos JS y JSX
+            if (file.endsWith('.js') || file.endsWith('.jsx')) {
+                arrayOfFiles.push(path.join(dirPath, "/", file));
+            }
         }
+    });
 
-        fs.writeFileSync(file, content, 'utf8');
-        console.log(`Updated ${file}`);
-    }
+    return arrayOfFiles;
 }
+
+const files = getAllFiles(srcDir);
+const API_BASE_URL = "import.meta.env.VITE_API_URL || 'http://localhost:3000'";
+let modifiedCount = 0;
+
+files.forEach(file => {
+    let content = fs.readFileSync(file, 'utf8');
+    let originalContent = content;
+
+    // Reemplazos específicos comunes
+    content = content.replace(/const API_URL = 'http:\/\/localhost:3000\/api';/g, `const API_URL = \`\${${API_BASE_URL}}/api\`;`);
+    content = content.replace(/const API_URL = 'http:\/\/localhost:3000\/api\/([^']+)'/g, `const API_URL = \`\${${API_BASE_URL}}/api/$1\``);
+
+    // Reemplazo general para fetch u otros usos
+    content = content.replace(/'http:\/\/localhost:3000\/api/g, `\`\${${API_BASE_URL}}/api`);
+    content = content.replace(/'http:\/\/localhost:3000\//g, `\`\${${API_BASE_URL}}/`);
+
+    // Casos donde ya usan template literals con backticks
+    content = content.replace(/`http:\/\/localhost:3000\/api/g, `\`\${${API_BASE_URL}}/api`);
+    content = content.replace(/`http:\/\/localhost:3000\//g, `\`\${${API_BASE_URL}}/`);
+
+    if (content !== originalContent) {
+        fs.writeFileSync(file, content, 'utf8');
+        console.log(`Modificado: ${file}`);
+        modifiedCount++;
+    }
+});
+
+console.log(`\nReemplazo completado. Se modificaron ${modifiedCount} archivos.`);

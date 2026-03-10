@@ -81,7 +81,11 @@ export default function AjustesUsuarios() {
     try {
       if (formData.id) {
         // Editando
-        const payload = { rol: formData.rol, activo: formData.activo, username: formData.username.trim() };
+        const payload = {
+          username: formData.username.trim().toLowerCase(),
+          rol: formData.rol,
+          activo: formData.activo
+        };
         if (formData.password.trim() !== '') {
           payload.password = formData.password;
         }
@@ -94,6 +98,13 @@ export default function AjustesUsuarios() {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error al actualizar');
+
+        // Si el usuario acaba de cambiar su propio nombre, avisarle
+        const storedUser = JSON.parse(localStorage.getItem('nexofix_user') || '{}');
+        if (storedUser.username && payload.username !== storedUser.username && formData.id === 1) {
+          // Nota: El admin principal suele ser ID 1. Para otros usuarios, la sesión no se verá afectada inmediatamente.
+          alert("Has cambiado el nombre del administrador principal. Por seguridad, te recomendamos cerrar sesión e ingresar con las nuevas credenciales.");
+        }
 
       } else {
         // Creando
@@ -252,6 +263,11 @@ export default function AjustesUsuarios() {
                     required
                     autoComplete="off"
                   />
+                  {!!formData.id && (
+                    <small style={{ color: '#e67e22', display: 'block', marginTop: '5px' }}>
+                      ⚠️ Si cambias tu propio nombre de usuario, perderás el acceso actual y deberás iniciar sesión con las nuevas credenciales.
+                    </small>
+                  )}
                 </div>
 
                 <div className="form-group" style={{ marginTop: '1rem' }}>
