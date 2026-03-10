@@ -5,27 +5,7 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// Llave secreta para firmar los JWT (en un entorno cloud, esto debería ser una variable de entorno segura)
 const JWT_SECRET = 'nexofix_super_secret_key_2026';
-
-/**
- * Middleware para verificar el token JWT en las cabeceras de la petición.
- * Usamos declaración de función para asegurar el hoisting correcto.
- */
-export function verifyToken(req, res, next) {
-  const bearerHeader = req.headers['authorization'];
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(' ');
-    const bearerToken = bearer[1];
-    jwt.verify(bearerToken, JWT_SECRET, (err, decoded) => {
-      if (err) return res.status(403).json({ error: 'Token inválido o expirado' });
-      req.user = decoded;
-      next();
-    });
-  } else {
-    res.status(401).json({ error: 'Acceso denegado. Token no proporcionado.' });
-  }
-}
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {

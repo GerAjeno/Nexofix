@@ -38,7 +38,7 @@ export default function Ajustes() {
 
   useEffect(() => {
     loadAjustes();
-    
+
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
       setIsTablet(window.innerWidth <= 1024);
@@ -70,8 +70,8 @@ export default function Ajustes() {
         smtp_user: data.smtp_user || '',
         smtp_pass: data.smtp_pass || ''
       });
-      setPreviewLogo(data.empresa_logo && data.empresa_logo !== '/logo.png' 
-        ? `http://localhost:3000${data.empresa_logo}` 
+      setPreviewLogo(data.empresa_logo && data.empresa_logo !== '/logo.png'
+        ? `http://localhost:3000${data.empresa_logo}`
         : null
       );
     } catch (err) {
@@ -94,7 +94,7 @@ export default function Ajustes() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setPreviewLogo(URL.createObjectURL(file));
-      
+
       try {
         const uploadRes = await uploadLogo(file);
         setGeneralData(prev => ({ ...prev, empresa_logo: uploadRes.path }));
@@ -125,37 +125,37 @@ export default function Ajustes() {
   return (
     <div className="card ajustes-container" style={{ padding: 0, overflow: 'hidden' }}>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
-        
+
         {/* Barra Superior de Pestañas (Tabs) */}
-        <div style={{ 
-          width: '100%', 
-          backgroundColor: 'var(--bg-card)', 
+        <div style={{
+          width: '100%',
+          backgroundColor: 'var(--bg-card)',
           borderBottom: '1px solid var(--border-color)',
           padding: '1.5rem 1.5rem 0 1.5rem'
         }}>
           <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={22} className="text-primary" /> Ajustes Globales
           </h2>
-          
-          <nav style={{ 
-            display: 'flex', 
-            gap: '1.5rem', 
+
+          <nav style={{
+            display: 'flex',
+            gap: '1.5rem',
             overflowX: 'auto',
             whiteSpace: 'nowrap',
-            scrollbarWidth: 'none', 
+            scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }}>
-            <button 
+            <button
               className={`ajustes-tab ${activeTab === 'general' ? 'active' : ''}`}
               onClick={() => setActiveTab('general')}
-              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'general' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'general' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'general' ? '600': 'normal' }}
+              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'general' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'general' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'general' ? '600' : 'normal' }}
             >
               <Building2 size={18} /> General
             </button>
-            <button 
+            <button
               className={`ajustes-tab ${activeTab === 'usuarios' ? 'active' : ''}`}
               onClick={() => setActiveTab('usuarios')}
-              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'usuarios' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'usuarios' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'usuarios' ? '600': 'normal' }}
+              style={{ padding: '0 0 12px 0', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', borderBottom: activeTab === 'usuarios' ? '3px solid var(--primary-color)' : '3px solid transparent', color: activeTab === 'usuarios' ? 'var(--primary-color)' : 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'usuarios' ? '600' : 'normal' }}
             >
               <ShieldAlert size={18} /> Usuarios
             </button>
@@ -173,9 +173,9 @@ export default function Ajustes() {
 
         {/* Panel de Edición Central */}
         <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-          
+
           {error && <div className="error-message" style={{ marginBottom: '1rem', padding: '12px', backgroundColor: 'rgba(231, 76, 60, 0.1)', color: '#e74c3c', borderRadius: '8px', border: '1px solid rgba(231, 76, 60, 0.3)', display: 'flex', alignItems: 'center', gap: '8px' }}><ShieldAlert size={18} /> {error}</div>}
-          
+
           {saveSuccess && <div style={{ marginBottom: '1rem', padding: '12px', backgroundColor: 'rgba(46, 204, 113, 0.1)', color: '#2ecc71', borderRadius: '8px', border: '1px solid rgba(46, 204, 113, 0.3)', display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle2 size={18} /> Cambios guardados y aplicados correctamente en la base de datos central.</div>}
 
           {activeTab === 'general' && (
@@ -185,25 +185,25 @@ export default function Ajustes() {
                   <h3 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Ajustes Generales</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Información de la empresa, cuentas bancarias e impuestos.</p>
                 </div>
-                <button 
+                <button
                   onClick={handleSaveGeneral}
                   disabled={isSaving}
                   className="btn btn-primary"
                   style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  {isSaving ? <div className="loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: '#fff', borderTopColor: 'transparent' }}></div> : <Save size={18} />} 
+                  {isSaving ? <div className="loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: '#fff', borderTopColor: 'transparent' }}></div> : <Save size={18} />}
                   {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: !isTablet ? '1fr 1fr' : '1fr', gap: '2rem' }}>
-                
+
                 {/* IDENTIDAD DE LA EMPRESA */}
                 <div style={{ backgroundColor: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                   <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
                     <Building2 size={20} /> Identidad de la Empresa
                   </h4>
-                  
+
                   <div className="form-group">
                     <label>Nombre Comercial / Razón Social</label>
                     <input type="text" className="form-control" name="empresa_nombre" value={generalData.empresa_nombre} onChange={handleChange} placeholder="Ej. NexoFix SpA" />
@@ -242,13 +242,13 @@ export default function Ajustes() {
                     <Banknote size={20} /> Datos de Transferencia Bancaria
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Esta información aparecerá impresa para sus clientes en Cotizaciones y Recibos PDF.</p>
-                  
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
                       <label>Banco Emisor</label>
                       <input type="text" className="form-control" name="banco_nombre" value={generalData.banco_nombre} onChange={handleChange} placeholder="Ej. Banco Estado" />
                     </div>
-                    
+
                     <div className="form-group">
                       <label>Tipo de Cuenta</label>
                       <select className="form-control" name="banco_tipo_cuenta" value={generalData.banco_tipo_cuenta} onChange={handleChange}>
@@ -287,7 +287,7 @@ export default function Ajustes() {
                   <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', color: 'var(--warning-color)' }}>
                     <MonitorCog size={20} /> Fiscalidad y Localización Regional
                   </h4>
-                  
+
                   <div style={{ display: 'grid', gridTemplateColumns: !isMobile ? '1fr 1fr 1fr' : '1fr', gap: '1.5rem' }}>
                     <div className="form-group">
                       <label>Idioma por Defecto UI</label>
@@ -321,7 +321,7 @@ export default function Ajustes() {
                     <MonitorCog size={20} /> Configuración de Servidor de Correos (SMTP)
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Configura tu cuenta de correo para enviar cotizaciones y cobros directamente desde NexoFix.</p>
-                  
+
                   <div style={{ display: 'grid', gridTemplateColumns: !isMobile ? '2fr 1fr' : '1fr', gap: '1.5rem' }}>
                     <div className="form-group">
                       <label>Servidor SMTP (Ej. smtp.gmail.com)</label>

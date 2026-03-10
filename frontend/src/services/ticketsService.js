@@ -7,7 +7,7 @@ export const ticketsService = {
     const response = await axios.get(API_URL);
     return response.data;
   },
-  
+
   getById: async (id) => {
     const response = await axios.get(`${API_URL}/${id}`);
     return response.data;

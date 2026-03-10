@@ -136,9 +136,6 @@ function initDb() {
       )
     `);
 
-    // Migration: ensure requiere_reset column exists
-    db.run("ALTER TABLE usuarios ADD COLUMN requiere_reset INTEGER DEFAULT 0", () => { });
-
     console.log('Database tables initialized.');
   });
 }

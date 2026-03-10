@@ -7,7 +7,7 @@ export const plantillasService = {
     const response = await axios.get(`${API_URL}/textos`, { params: { tipo } });
     return response.data;
   },
-  
+
   deleteTexto: async (id) => {
     const response = await axios.delete(`${API_URL}/textos/${id}`);
     return response.data;

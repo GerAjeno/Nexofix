@@ -25,9 +25,9 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/cobranzas/${cobranzaId}`);
         const json = await response.json();
         setData(json);
-        
+
         const ajustesData = await getAjustesGenerales();
-        if(ajustesData && ajustesData.empresa_nombre) {
+        if (ajustesData && ajustesData.empresa_nombre) {
           setEmpresa(ajustesData);
         }
       } catch (err) {
@@ -52,11 +52,11 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
   const handleDownload = () => {
     const element = printRef.current;
     const opt = {
-      margin:       0,
-      filename:     `COB-${data.numero_cobro}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      margin: 0,
+      filename: `COB-${data.numero_cobro}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     html2pdf().set(opt).from(element).save();
   };
@@ -66,7 +66,7 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
   return (
     <div className="modal-overlay" style={{ zIndex: 1100, overflowY: 'auto' }}>
       <div className="modal-content" style={{ maxWidth: '850px', backgroundColor: '#e2e8f0', padding: '1rem', borderRadius: '8px' }}>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', background: '#fff', padding: '1rem', borderRadius: '8px' }}>
           <h3 style={{ margin: 0, color: '#0f172a' }}>Reporte Consolidado de Cobro</h3>
           <div>
@@ -79,7 +79,7 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
 
         <div style={{ margin: '0 auto', background: '#ffffff', width: '8.5in', minHeight: '11in', position: 'relative', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
           <div ref={printRef} style={{ width: '100%', minHeight: '11in', background: '#fff', color: '#333', fontFamily: '"Arial", sans-serif', fontSize: '13px', lineHeight: 1.4 }}>
-            
+
             {/* Header */}
             <div style={{ background: '#007bff', padding: '1.5rem 2.5rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

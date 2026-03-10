@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../database.js';
-import { verifyToken } from './auth.js'; // Importamos el middleware si queremos asegurar que solo los logeados accedan
+import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
