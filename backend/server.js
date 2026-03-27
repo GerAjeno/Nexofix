@@ -87,8 +87,8 @@ app.post('/api/upload', upload.single('imagen'), async (req, res) => {
   }
 });
 
-// Servir archivos estáticos desde el directorio 'uploads'
-app.use('/uploads', express.static(uploadDir));
+// Servir archivos estáticos desde el directorio 'uploads' (Legado para fotos antiguas)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Servir el frontend de React compilado de forma nativa desde el mismo puerto
 const __filename = fileURLToPath(import.meta.url);
