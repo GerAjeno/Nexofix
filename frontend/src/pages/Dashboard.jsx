@@ -47,6 +47,7 @@ export default function Dashboard() {
   }
 
   if (!stats) return <div style={{ padding: '2rem', textAlign: 'center' }}>Error al conectar con el servidor de datos.</div>;
+  if (stats.error) return <div style={{ padding: '2rem', textAlign: 'center', color: '#e74c3c' }}><h3>Error del Servidor</h3><p>{stats.error}</p></div>;
 
   return (
     <div className="page-container" style={{ padding: '1rem' }}>

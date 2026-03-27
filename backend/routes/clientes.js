@@ -3,123 +3,132 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// GET todos los clientes activos
-router.get('/', (req, res) => {
-  db.all('SELECT * FROM clientes WHERE activo = 1 ORDER BY id DESC', [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+router.get('/', async (req, res) => {
+  try {
+    const snapshot = await db.collection('clientes')
+                             .where('activo', '==', 1)
+                             .get();
+    let rows = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Ordenar descendente en memoria
+    rows.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// GET un solo cliente
-router.get('/:id', (req, res) => {
-  db.get('SELECT * FROM clientes WHERE id = ?', [req.params.id], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (!row) {
-      return res.status(404).json({ error: 'Cliente no encontrado' });
-    }
-    res.json(row);
-  });
+router.get('/:id', async (req, res) => {
+  try {
+    const doc = await db.collection('clientes').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Cliente no encontrado' });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// POST nuevo cliente
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
   
-  // Validación básica
   if (!tipo || !rut || !nombre) {
     return res.status(400).json({ error: 'tipo, rut, and nombre are required' });
   }
 
-  // Verificar si el RUT ya existe
-  db.get('SELECT id, activo FROM clientes WHERE rut = ?', [rut], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const clientesRef = db.collection('clientes');
     
-    if (row) {
-      if (row.activo === 0) {
-        // Reactivar y actualizar en lugar de fallar por restricción única
-        const updateSql = `
-          UPDATE clientes 
-          SET tipo=?, nombre=?, representante=?, telefono=?, email=?, direccion=?, giro=?, notas_texto=?, notas_imagen=?, activo=1, updated_at=CURRENT_TIMESTAMP 
-          WHERE id=?
-        `;
-        const updateParams = [tipo, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, row.id];
-        
-        db.run(updateSql, updateParams, function(err) {
-          if (err) return res.status(500).json({ error: err.message });
-          return res.status(201).json({ id: row.id, message: 'Cliente reactivado y actualizado exitosamente' });
-        });
-        return;
+    // Verificar si el RUT ya existe
+    const snapshot = await clientesRef.where('rut', '==', rut).limit(1).get();
+
+    if (!snapshot.empty) {
+      const existingDoc = snapshot.docs[0];
+      const data = existingDoc.data();
+      if (data.activo === 0) {
+        // Reactivar
+        const updateData = { tipo, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, activo: 1, updated_at: new Date().toISOString() };
+        await clientesRef.doc(existingDoc.id).update(updateData);
+        return res.status(201).json({ id: existingDoc.id, message: 'Cliente reactivado y actualizado exitosamente' });
       } else {
         return res.status(409).json({ error: 'El RUT ya existe en el sistema y está activo' });
       }
     }
 
     // INSERT normal
-    const sql = `
-      INSERT INTO clientes (tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, activo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    `;
-    const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen];
+    const nuevoCliente = {
+      tipo, rut, nombre, 
+      representante: representante || null, 
+      telefono: telefono || null,
+      email: email || null, 
+      direccion: direccion || null, 
+      giro: giro || null,
+      notas_texto: notas_texto || null, 
+      notas_imagen: notas_imagen || null,
+      activo: 1, 
+      created_at: new Date().toISOString(), 
+      updated_at: new Date().toISOString()
+    };
+    
+    // Limpiamos undefined para Firestore
+    Object.keys(nuevoCliente).forEach(key => nuevoCliente[key] === undefined ? delete nuevoCliente[key] : {});
 
-    db.run(sql, params, function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(201).json({ id: this.lastID, message: 'Cliente creado exitosamente' });
-    });
-  });
+    const docRef = await clientesRef.add(nuevoCliente);
+    res.status(201).json({ id: docRef.id, message: 'Cliente creado exitosamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// PUT actualizar cliente
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen } = req.body;
   
-  const sql = `
-    UPDATE clientes 
-    SET tipo = COALESCE(?, tipo),
-        rut = COALESCE(?, rut),
-        nombre = COALESCE(?, nombre),
-        representante = COALESCE(?, representante),
-        telefono = COALESCE(?, telefono),
-        email = COALESCE(?, email),
-        direccion = COALESCE(?, direccion),
-        giro = COALESCE(?, giro),
-        notas_texto = COALESCE(?, notas_texto),
-        notas_imagen = COALESCE(?, notas_imagen),
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `;
-  
-  const params = [tipo, rut, nombre, representante, telefono, email, direccion, giro, notas_texto, notas_imagen, req.params.id];
-
-  db.run(sql, params, function(err) {
-    if (err) {
-      if (err.message.includes('UNIQUE constraint')) {
-        return res.status(409).json({ error: 'El RUT ya existe en el sistema' });
-      }
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
+  try {
+    const docRef = db.collection('clientes').doc(req.params.id);
+    const doc = await docRef.get();
+    
+    if (!doc.exists) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
+
+    if (rut && rut !== doc.data().rut) {
+       const exists = await db.collection('clientes').where('rut', '==', rut).limit(1).get();
+       if (!exists.empty) return res.status(409).json({ error: 'El RUT ya existe en el sistema' });
+    }
+
+    const updates = {};
+    if (tipo !== undefined) updates.tipo = tipo;
+    if (rut !== undefined) updates.rut = rut;
+    if (nombre !== undefined) updates.nombre = nombre;
+    if (representante !== undefined) updates.representante = representante;
+    if (telefono !== undefined) updates.telefono = telefono;
+    if (email !== undefined) updates.email = email;
+    if (direccion !== undefined) updates.direccion = direccion;
+    if (giro !== undefined) updates.giro = giro;
+    if (notas_texto !== undefined) updates.notas_texto = notas_texto;
+    if (notas_imagen !== undefined) updates.notas_imagen = notas_imagen;
+    updates.updated_at = new Date().toISOString();
+
+    await docRef.update(updates);
     res.json({ message: 'Cliente actualizado exitosamente' });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// DELETE (Borrado Suave / Archivar) cliente
-router.delete('/:id', (req, res) => {
-  db.run('UPDATE clientes SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
+router.delete('/:id', async (req, res) => {
+  try {
+    const docRef = db.collection('clientes').doc(req.params.id);
+    const doc = await docRef.get();
+    
+    if (!doc.exists) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
+
+    // Borrado suave
+    await docRef.update({ activo: 0, updated_at: new Date().toISOString() });
     res.json({ message: 'Cliente archivado exitosamente' });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

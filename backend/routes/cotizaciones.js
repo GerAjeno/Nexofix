@@ -3,230 +3,215 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
+// Helper para resolver datos de cliente (Simular LEFT JOIN)
+const resolveClientData = async (cotizacion) => {
+  if (cotizacion.cliente_id) {
+    try {
+      const cliDoc = await db.collection('clientes').doc(cotizacion.cliente_id).get();
+      if (cliDoc.exists) {
+        cotizacion.cliente_nombre = cliDoc.data().nombre;
+        cotizacion.cliente_rut = cliDoc.data().rut;
+        cotizacion.cliente_direccion = cliDoc.data().direccion;
+        cotizacion.cliente_email = cliDoc.data().email;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return cotizacion;
+};
+
 // GET todas las cotizaciones activas
-router.get('/', (req, res) => {
-  const sql = `
-    SELECT c.*, cl.nombre as cliente_nombre, cl.rut as cliente_rut
-    FROM cotizaciones c
-    LEFT JOIN clientes cl ON c.cliente_id = cl.id
-    WHERE c.activo = 1
-    ORDER BY c.id DESC
-  `;
-  db.all(sql, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+router.get('/', async (req, res) => {
+  try {
+    const snapshot = await db.collection('cotizaciones')
+                             .where('activo', '==', 1)
+                             .get();
+    let cotizaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    cotizaciones.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    
+    // Resolver cliente_nombre y rut para cada una (Promise.all para rendimiento)
+    cotizaciones = await Promise.all(cotizaciones.map(c => resolveClientData(c)));
+    
+    res.json(cotizaciones);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// GET una sola cotización con sus ítems y datos del cliente
-router.get('/:id', (req, res) => {
-  const sqlCotizacion = `
-    SELECT c.*, cl.nombre as cliente_nombre, cl.rut as cliente_rut, cl.direccion as cliente_direccion, cl.email as cliente_email
-    FROM cotizaciones c
-    LEFT JOIN clientes cl ON c.cliente_id = cl.id
-    WHERE c.id = ? AND c.activo = 1
-  `;
+// GET una sola cotización con sus ítems (que ahora son un array embebido)
+router.get('/:id', async (req, res) => {
+  try {
+    const doc = await db.collection('cotizaciones').doc(req.params.id).get();
+    if (!doc.exists || doc.data().activo === 0) {
+      return res.status(404).json({ error: 'Cotización no encontrada' });
+    }
+    
+    let cotizacion = { id: doc.id, ...doc.data() };
+    cotizacion = await resolveClientData(cotizacion);
+    
+    // Si no tiene arreglo de items por default, inyectar array vacio
+    if (!cotizacion.items) cotizacion.items = [];
+    
+    res.json(cotizacion);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST nueva cotización (items insertados embebidos)
+router.post('/', async (req, res) => {
+  const data = req.body;
   
-  db.get(sqlCotizacion, [req.params.id], (err, cotizacion) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!cotizacion) return res.status(404).json({ error: 'Cotización no encontrada' });
+  const numero_cotizacion = data.numero_cotizacion || `COT-${Date.now().toString().slice(-6)}`;
+  
+  const itemsCalculados = (data.items || []).map(item => ({
+    ...item,
+    total: item.total || (item.cantidad * item.precio_unitario)
+  }));
 
-    db.all('SELECT * FROM cotizacion_items WHERE cotizacion_id = ?', [cotizacion.id], (err, items) => {
-      if (err) return res.status(500).json({ error: err.message });
-      cotizacion.items = items || [];
-      res.json(cotizacion);
-    });
-  });
+  const nuevaCot = {
+    numero_cotizacion,
+    cliente_id: data.cliente_id,
+    fecha_emision: data.fecha_emision || null,
+    validez: data.validez || null,
+    tipo_trabajo: data.tipo_trabajo || null,
+    estado: data.estado || 'Enviada',
+    proyecto: data.proyecto || null,
+    direccion_trabajo: data.direccion_trabajo || null,
+    telefono_contacto: data.telefono_contacto || null,
+    descripcion_trabajo: data.descripcion_trabajo || null,
+    subtotal: data.subtotal || 0,
+    descuento_porcentaje: data.descuento_porcentaje || 0,
+    descuento_monto: data.descuento_monto || 0,
+    tipo_impuesto: data.tipo_impuesto || null,
+    monto_impuesto: data.monto_impuesto || 0,
+    total_final: data.total_final || 0,
+    condiciones_notas: data.condiciones_notas || null,
+    items: itemsCalculados, // Con totales autocalculados
+    activo: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  // Limpiar undefined
+  Object.keys(nuevaCot).forEach(k => nuevaCot[k] === undefined && delete nuevaCot[k]);
+
+  try {
+    const docRef = await db.collection('cotizaciones').add(nuevaCot);
+    res.status(201).json({ id: docRef.id, numero_cotizacion, message: 'Cotización creada exitosamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// POST nueva cotización (Transacción con Ítems)
-router.post('/', (req, res) => {
-  const { 
-    cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto, 
-    direccion_trabajo, telefono_contacto,
-    descripcion_trabajo, 
-    subtotal, descuento_porcentaje, descuento_monto, tipo_impuesto, monto_impuesto, total_final, 
-    condiciones_notas, items 
-  } = req.body;
+// PUT actualizar cotización completando el documento
+router.put('/:id', async (req, res) => {
+  const data = req.body;
+  try {
+    const docRef = db.collection('cotizaciones').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Cotización no encontrada' });
 
-  // Generar número de cotización único si no viene provisto (e.g. COT-X)
-  const numero_cotizacion = req.body.numero_cotizacion || `COT-${Date.now().toString().slice(-6)}`;
+    const itemsCalculados = (data.items || []).map(item => ({
+      ...item,
+      total: item.total || (item.cantidad * item.precio_unitario)
+    }));
 
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
+    const updates = {
+      cliente_id: data.cliente_id,
+      fecha_emision: data.fecha_emision,
+      validez: data.validez,
+      tipo_trabajo: data.tipo_trabajo,
+      estado: data.estado,
+      proyecto: data.proyecto,
+      direccion_trabajo: data.direccion_trabajo,
+      telefono_contacto: data.telefono_contacto,
+      descripcion_trabajo: data.descripcion_trabajo,
+      subtotal: data.subtotal,
+      descuento_porcentaje: data.descuento_porcentaje,
+      descuento_monto: data.descuento_monto,
+      tipo_impuesto: data.tipo_impuesto,
+      monto_impuesto: data.monto_impuesto,
+      total_final: data.total_final,
+      condiciones_notas: data.condiciones_notas,
+      items: itemsCalculados,
+      updated_at: new Date().toISOString()
+    };
+    
+    Object.keys(updates).forEach(k => updates[k] === undefined && delete updates[k]);
 
-    const sqlInsertCotizacion = `
-      INSERT INTO cotizaciones (
-        numero_cotizacion, cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto, 
-        direccion_trabajo, telefono_contacto,
-        descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto, 
-        tipo_impuesto, monto_impuesto, total_final, condiciones_notas, activo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    `;
-
-    const params = [
-      numero_cotizacion, cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto,
-      direccion_trabajo, telefono_contacto,
-      descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto,
-      tipo_impuesto, monto_impuesto, total_final, condiciones_notas
-    ];
-
-    db.run(sqlInsertCotizacion, params, function(err) {
-      if (err) {
-        db.run('ROLLBACK');
-        return res.status(500).json({ error: err.message });
-      }
-
-      const cotizacionId = this.lastID;
-
-      // Insertar los ítems
-      if (items && items.length > 0) {
-        const stmt = db.prepare('INSERT INTO cotizacion_items (cotizacion_id, descripcion, cantidad, precio_unitario, total) VALUES (?, ?, ?, ?, ?)');
-        
-        for (const item of items) {
-          stmt.run([cotizacionId, item.descripcion, item.cantidad, item.precio_unitario, item.total]);
-        }
-        stmt.finalize();
-      }
-
-      db.run('COMMIT', (errCommit) => {
-        if (errCommit) return res.status(500).json({ error: errCommit.message });
-        res.status(201).json({ id: cotizacionId, numero_cotizacion, message: 'Cotización creada exitosamente' });
-      });
-    });
-  });
+    await docRef.update(updates);
+    res.json({ message: 'Cotización actualizada exitosamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// PUT actualizar cotización (Transacción con Ítems)
-router.put('/:id', (req, res) => {
+// POST aceptar cotización y crear ticket (Batch de Firestore)
+router.post('/:id/aceptar', async (req, res) => {
   const { id } = req.params;
-  const { 
-    cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto, 
-    direccion_trabajo, telefono_contacto,
-    descripcion_trabajo, 
-    subtotal, descuento_porcentaje, descuento_monto, tipo_impuesto, monto_impuesto, total_final, 
-    condiciones_notas, items 
-  } = req.body;
-
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
-
-    const sqlUpdateCotizacion = `
-      UPDATE cotizaciones SET 
-        cliente_id = ?, fecha_emision = ?, validez = ?, tipo_trabajo = ?, 
-        estado = ?, proyecto = ?, direccion_trabajo = ?, telefono_contacto = ?,
-        descripcion_trabajo = ?, subtotal = ?, descuento_porcentaje = ?, 
-        descuento_monto = ?, tipo_impuesto = ?, monto_impuesto = ?, 
-        total_final = ?, condiciones_notas = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `;
-
-    const params = [
-      cliente_id, fecha_emision, validez, tipo_trabajo, estado, proyecto,
-      direccion_trabajo, telefono_contacto,
-      descripcion_trabajo, subtotal, descuento_porcentaje, descuento_monto,
-      tipo_impuesto, monto_impuesto, total_final, condiciones_notas, id
-    ];
-
-    db.run(sqlUpdateCotizacion, params, function(err) {
-      if (err) {
-        db.run('ROLLBACK');
-        return res.status(500).json({ error: err.message });
-      }
-
-      // Eliminar ítems anteriores e insertar los nuevos
-      db.run('DELETE FROM cotizacion_items WHERE cotizacion_id = ?', [id], (errDel) => {
-        if (errDel) {
-          db.run('ROLLBACK');
-          return res.status(500).json({ error: errDel.message });
-        }
-
-        if (items && items.length > 0) {
-          const stmt = db.prepare('INSERT INTO cotizacion_items (cotizacion_id, descripcion, cantidad, precio_unitario, total) VALUES (?, ?, ?, ?, ?)');
-          for (const item of items) {
-            stmt.run([id, item.descripcion, item.cantidad, item.precio_unitario, item.total]);
-          }
-          stmt.finalize();
-        }
-
-        db.run('COMMIT', (errCommit) => {
-          if (errCommit) return res.status(500).json({ error: errCommit.message });
-          res.json({ message: 'Cotización actualizada exitosamente' });
-        });
-      });
-    });
-  });
-});
-
-// POST aceptar cotización y crear ticket automáticamente
-router.post('/:id/aceptar', (req, res) => {
-  const { id } = req.params;
-  const fecha = new Date().toISOString().split('T')[0];
   const numero_ticket = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+  const fecha = new Date().toISOString().split('T')[0];
 
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
+  try {
+    const cotRef = db.collection('cotizaciones').doc(id);
+    const cotDoc = await cotRef.get();
 
-    // 1. Obtener datos de la cotización
-    db.get('SELECT * FROM cotizaciones WHERE id = ?', [id], (err, cot) => {
-      if (err || !cot) {
-        db.run('ROLLBACK');
-        return res.status(err ? 500 : 404).json({ error: err ? err.message : 'Cotización no encontrada' });
-      }
+    if (!cotDoc.exists) return res.status(404).json({ error: 'Cotización no encontrada' });
+    const cot = cotDoc.data();
 
-      // 2. Actualizar estado de la cotización
-      db.run('UPDATE cotizaciones SET estado = "Aceptada", updated_at = CURRENT_TIMESTAMP WHERE id = ?', [id], (errUpd) => {
-        if (errUpd) {
-          db.run('ROLLBACK');
-          return res.status(500).json({ error: errUpd.message });
-        }
+    const batch = db.batch();
 
-        // 3. Crear el Ticket de trabajo asociado
-        const sqlInsertTicket = `
-          INSERT INTO tickets (
-            numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto, 
-            tipo_trabajo, fecha_creacion, estado, prioridad, descripcion_problema
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, "Pendiente", "Media", ?)
-        `;
+    // Actualizar Cotizacion
+    batch.update(cotRef, { estado: 'Aceptada', updated_at: new Date().toISOString() });
 
-        const paramsTicket = [
-          numero_ticket,
-          cot.cliente_id,
-          cot.id,
-          cot.direccion_trabajo || '',
-          cot.telefono_contacto || '',
-          cot.tipo_trabajo || 'Corrientes Débiles',
-          fecha,
-          cot.descripcion_trabajo || ''
-        ];
+    // Crear Ticket
+    const ticketsRef = db.collection('tickets').doc(); // Generar ID auto
+    const nuevoTicket = {
+      numero_ticket,
+      cliente_id: cot.cliente_id,
+      cotizacion_id: id, // Firebase ID
+      direccion_trabajo: cot.direccion_trabajo || '',
+      telefono_contacto: cot.telefono_contacto || '',
+      tipo_trabajo: cot.tipo_trabajo || 'Corrientes Débiles',
+      fecha_creacion: fecha,
+      estado: 'Pendiente',
+      prioridad: 'Media',
+      descripcion_problema: cot.descripcion_trabajo || '',
+      notas_tecnicas: '',
+      jornada: 'Sin Asignar',
+      activo: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-        db.run(sqlInsertTicket, paramsTicket, function(errTkt) {
-          if (errTkt) {
-            db.run('ROLLBACK');
-            return res.status(500).json({ error: errTkt.message });
-          }
+    batch.set(ticketsRef, nuevoTicket);
+    await batch.commit();
 
-          db.run('COMMIT', (errCommit) => {
-            if (errCommit) return res.status(500).json({ error: errCommit.message });
-            res.json({ 
-              message: 'Cotización aceptada y Ticket generado', 
-              ticket_id: this.lastID,
-              numero_ticket 
-            });
-          });
-        });
-      });
+    res.json({ 
+      message: 'Cotización aceptada y Ticket generado', 
+      ticket_id: ticketsRef.id,
+      numero_ticket 
     });
-  });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// DELETE (Borrado Suave / Archivar) cotización
-router.delete('/:id', (req, res) => {
-  db.run('UPDATE cotizaciones SET activo = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(404).json({ error: 'Cotización no encontrada' });
+// DELETE (Borrado Suave) cotización
+router.delete('/:id', async (req, res) => {
+  try {
+    const docRef = db.collection('cotizaciones').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Cotización no encontrada' });
+
+    await docRef.update({ activo: 0, updated_at: new Date().toISOString() });
     res.json({ message: 'Cotización archivada exitosamente' });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

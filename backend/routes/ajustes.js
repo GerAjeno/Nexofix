@@ -3,58 +3,39 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
+const DOC_ID = 'general';
+
 // GET /api/ajustes/general
-router.get('/general', (req, res) => {
-  db.get("SELECT * FROM ajustes_general WHERE id = 1", (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    // Retornamos un objeto vacío de contingencia por si la migración no ocurriese
-    res.json(row || {}); 
-  });
+router.get('/general', async (req, res) => {
+  try {
+    const doc = await db.collection('configuracion').doc(DOC_ID).get();
+    if (!doc.exists) return res.json({});
+    res.json(doc.data());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT /api/ajustes/general
-router.put('/general', (req, res) => {
-  const {
-    empresa_nombre,
-    empresa_logo,
-    empresa_direccion,
-    empresa_telefono,
-    banco_rut,
-    banco_nombre_titular,
-    banco_email,
-    banco_nombre,
-    banco_tipo_cuenta,
-    banco_numero_cuenta,
-    idioma,
-    impuesto_boleta,
-    impuesto_iva,
-    smtp_host,
-    smtp_puerto,
-    smtp_user,
-    smtp_pass
-  } = req.body;
+router.put('/general', async (req, res) => {
+  const data = req.body;
+  try {
+    // Almacenamos el documento 'general' en la colección 'configuracion'
+    const docRef = db.collection('configuracion').doc(DOC_ID);
+    
+    // Convertir undefined a null para evitar Firebase errors
+    const sanitizedData = {};
+    for (const key in data) {
+      if (data[key] !== undefined) {
+        sanitizedData[key] = data[key];
+      }
+    }
 
-  const sql = `
-    UPDATE ajustes_general 
-    SET 
-        empresa_nombre = ?, empresa_logo = ?, empresa_direccion = ?, empresa_telefono = ?,
-        banco_rut = ?, banco_nombre_titular = ?, banco_email = ?, banco_nombre = ?,
-        banco_tipo_cuenta = ?, banco_numero_cuenta = ?, idioma = ?,
-        impuesto_boleta = ?, impuesto_iva = ?,
-        smtp_host = ?, smtp_puerto = ?, smtp_user = ?, smtp_pass = ?
-    WHERE id = 1
-  `;
-
-  db.run(sql, [
-    empresa_nombre, empresa_logo, empresa_direccion, empresa_telefono,
-    banco_rut, banco_nombre_titular, banco_email, banco_nombre,
-    banco_tipo_cuenta, banco_numero_cuenta, idioma,
-    impuesto_boleta, impuesto_iva,
-    smtp_host, smtp_puerto, smtp_user, smtp_pass
-  ], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ updated: this.changes, message: 'Ajustes guardados exitosamente' });
-  });
+    await docRef.set(sanitizedData, { merge: true });
+    res.json({ updated: 1, message: 'Ajustes guardados exitosamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

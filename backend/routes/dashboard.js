@@ -6,77 +6,87 @@ const router = express.Router();
 // GET /api/dashboard/stats
 router.get('/stats', async (req, res) => {
   try {
-    const stats = {};
-
-    // 1. Total Clientes
-    const clientesPromise = new Promise((resolve, reject) => {
-      db.get("SELECT COUNT(*) as total FROM clientes WHERE activo = 1", (err, row) => {
-        if (err) reject(err);
-        else resolve(row.total);
-      });
-    });
+    // 1. Total Clientes Activos
+    const clientesPromise = db.collection('clientes').where('activo', '==', 1).count().get().then(snap => snap.data().count);
 
     // 2. Finanzas (Cobrado vs Pendiente)
-    const finanzasPromise = new Promise((resolve, reject) => {
-      db.all("SELECT estado, SUM(monto_total) as total FROM cobranzas WHERE activo = 1 GROUP BY estado", (err, rows) => {
-        if (err) reject(err);
-        else {
-          const fin = { cobrado: 0, pendiente: 0 };
-          rows.forEach(r => {
-            if (r.estado === 'Cobrado') fin.cobrado = r.total;
-            if (r.estado === 'En Cobro') fin.pendiente = r.total;
-          });
-          resolve(fin);
-        }
+    const finanzasPromise = db.collection('cobranzas').where('activo', '==', 1).get().then(snap => {
+      const fin = { cobrado: 0, pendiente: 0 };
+      snap.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.estado === 'Cobrado') fin.cobrado += (data.monto_total || 0);
+        if (data.estado === 'En Cobro') fin.pendiente += (data.monto_total || 0);
       });
+      return fin;
     });
 
     // 3. Operaciones (Tickets Activos)
-    const operacionesPromise = new Promise((resolve, reject) => {
-      db.all("SELECT estado, COUNT(*) as cantidad FROM tickets WHERE activo = 1 GROUP BY estado", (err, rows) => {
-        if (err) reject(err);
-        else {
-          const ops = { pendiente: 0, enProceso: 0, terminado: 0 };
-          rows.forEach(r => {
-            if (r.estado === 'Pendiente') ops.pendiente = r.cantidad;
-            if (r.estado === 'En Proceso') ops.enProceso = r.cantidad;
-            if (r.estado === 'Terminado') ops.terminado = r.cantidad;
-          });
-          resolve(ops);
+    const operacionesPromise = db.collection('tickets').where('activo', '==', 1).get().then(snap => {
+      const ops = { pendiente: 0, enProceso: 0, terminado: 0 };
+      snap.docs.forEach(doc => {
+        const est = doc.data().estado;
+        if (est === 'Pendiente') ops.pendiente += 1;
+        if (est === 'En Proceso') ops.enProceso += 1;
+        if (est === 'Terminado') ops.terminado += 1;
+      });
+      return ops;
+    });
+
+    // 4. Próximos Trabajos (Top 5 No Terminados) - Filtrado en memoria para evitar requerir Índices Compuestos en Firebase
+    const proximosPromise = db.collection('tickets')
+      .where('activo', '==', 1)
+      .get()
+      .then(async snap => {
+        let rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Filtro en memoria
+        rows = rows.filter(r => r.estado === 'Pendiente' || r.estado === 'En Proceso');
+        
+        // Orden ascendente
+        rows.sort((a, b) => {
+           if (!a.fecha_agendada) return 1;
+           if (!b.fecha_agendada) return -1;
+           return a.fecha_agendada.localeCompare(b.fecha_agendada);
+        });
+        
+        rows = rows.slice(0, 5);
+
+        // Resolver cliente
+        for (const t of rows) {
+          if (t.cliente_id) {
+            const cli = await db.collection('clientes').doc(t.cliente_id).get();
+            if (cli.exists) t.cliente_nombre = cli.data().nombre;
+          }
         }
+        return rows;
       });
-    });
 
-    // 4. Próximos Trabajos (Top 5)
-    const proximosPromise = new Promise((resolve, reject) => {
-      const sql = `
-        SELECT t.*, c.nombre as cliente_nombre 
-        FROM tickets t 
-        JOIN clientes c ON t.cliente_id = c.id 
-        WHERE t.estado != 'Terminado' AND t.activo = 1 
-        AND t.fecha_agendada IS NOT NULL
-        ORDER BY t.fecha_agendada ASC LIMIT 5
-      `;
-      db.all(sql, [], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
+    // 5. Actividad Reciente (Últimas 5 cobranzas) - Filtrado en memoria
+    const actividadPromise = db.collection('cobranzas')
+      .where('activo', '==', 1)
+      .get()
+      .then(async snap => {
+        let rows = snap.docs.map(d => ({ 
+          numero_cobro: d.data().numero_cobro, 
+          monto_total: d.data().monto_total, 
+          fecha_creacion: d.data().fecha_creacion, 
+          estado: d.data().estado,
+          cliente_id: d.data().cliente_id,
+          created_at: d.data().created_at || d.data().fecha_creacion || ''
+        }));
+        
+        rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+        rows = rows.slice(0, 5);
 
-    // 5. Actividad Reciente (Últimas 5 cobranzas generadas)
-    const actividadPromise = new Promise((resolve, reject) => {
-      const sql = `
-        SELECT cob.numero_cobro, cob.monto_total, c.nombre as cliente_nombre, cob.fecha_creacion, cob.estado
-        FROM cobranzas cob
-        JOIN clientes c ON cob.cliente_id = c.id
-        WHERE cob.activo = 1
-        ORDER BY cob.id DESC LIMIT 5
-      `;
-      db.all(sql, [], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
+        // Resolver cliente
+        for (const c of rows) {
+          if (c.cliente_id) {
+            const cli = await db.collection('clientes').doc(c.cliente_id).get();
+            if (cli.exists) c.cliente_nombre = cli.data().nombre;
+          }
+        }
+        return rows;
       });
-    });
 
     const [clientesTotal, finanzas, operaciones, proximosTrabajos, actividadReciente] = await Promise.all([
       clientesPromise, finanzasPromise, operacionesPromise, proximosPromise, actividadPromise

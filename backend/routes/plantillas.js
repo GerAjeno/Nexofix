@@ -3,68 +3,77 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// GET todas las plantillas por tipo
-router.get('/textos', (req, res) => {
+// GET todas las plantillas de textos
+router.get('/textos', async (req, res) => {
   const { tipo } = req.query;
-  let sql = 'SELECT * FROM plantillas WHERE activo = 1';
-  let params = [];
-  
-  if (tipo) {
-    sql += ' AND tipo = ?';
-    params.push(tipo);
-  }
-
-  db.all(sql, params, (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    let query = db.collection('plantillas').where('activo', '==', 1);
+    if (tipo) {
+      query = query.where('tipo', '==', tipo);
+    }
+    const snapshot = await query.get();
+    const rows = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST nueva plantilla de texto
-router.post('/textos', (req, res) => {
+router.post('/textos', async (req, res) => {
   const { tipo, nombre, contenido } = req.body;
-  const sql = 'INSERT INTO plantillas (tipo, nombre, contenido) VALUES (?, ?, ?)';
-  db.run(sql, [tipo, nombre, contenido], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: this.lastID });
-  });
+  try {
+    const docRef = await db.collection('plantillas').add({
+      tipo,
+      nombre,
+      contenido,
+      activo: 1,
+      created_at: new Date().toISOString()
+    });
+    res.status(201).json({ id: docRef.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // --- Plantillas de Itemizados Completos ---
 
-// POST nueva plantilla de itemizado (con sus detalles)
-router.post('/itemizados', (req, res) => {
+// POST nueva plantilla de itemizado (array embebido)
+router.post('/itemizados', async (req, res) => {
   const { nombre, items } = req.body;
-  
-  db.run('INSERT INTO plantillas_itemizados (nombre) VALUES (?)', [nombre], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    
-    const plantillaId = this.lastID;
-    const stmt = db.prepare('INSERT INTO plantillas_itemizados_detalles (plantilla_id, descripcion, cantidad, precio_unitario) VALUES (?, ?, ?, ?)');
-    
-    items.forEach(item => {
-      stmt.run(plantillaId, item.descripcion, item.cantidad, item.precio_unitario);
+  try {
+    const docRef = await db.collection('plantillas_itemizados').add({
+      nombre,
+      items: items || [],
+      activo: 1,
+      created_at: new Date().toISOString()
     });
-    
-    stmt.finalize();
-    res.json({ id: plantillaId, message: 'Plantilla de itemizado guardada' });
-  });
+    res.json({ id: docRef.id, message: 'Plantilla de itemizado guardada' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET todas las plantillas de itemizados
-router.get('/itemizados', (req, res) => {
-  db.all('SELECT * FROM plantillas_itemizados WHERE activo = 1', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+router.get('/itemizados', async (req, res) => {
+  try {
+    const snapshot = await db.collection('plantillas_itemizados').where('activo', '==', 1).get();
+    const rows = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// GET detalles de una plantilla de itemizado
-router.get('/itemizados/:id', (req, res) => {
-  db.all('SELECT * FROM plantillas_itemizados_detalles WHERE plantilla_id = ?', [req.params.id], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+// GET detalles de una plantilla de itemizado (Extrae items del documento)
+router.get('/itemizados/:id', async (req, res) => {
+  try {
+    const doc = await db.collection('plantillas_itemizados').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Plantilla no encontrada' });
+    res.json(doc.data().items || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

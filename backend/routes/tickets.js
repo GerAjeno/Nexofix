@@ -3,199 +3,188 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
+const resolveRefs = async (ticket) => {
+  if (ticket.cliente_id) {
+    const cliDoc = await db.collection('clientes').doc(ticket.cliente_id).get();
+    if (cliDoc.exists) {
+      ticket.cliente_nombre = cliDoc.data().nombre;
+      ticket.cliente_rut = cliDoc.data().rut;
+      ticket.cliente_telefono = cliDoc.data().telefono;
+      ticket.cliente_direccion = cliDoc.data().direccion;
+    }
+  }
+  if (ticket.cotizacion_id) {
+    const cotDoc = await db.collection('cotizaciones').doc(ticket.cotizacion_id).get();
+    if (cotDoc.exists) {
+      ticket.proyecto_nombre = cotDoc.data().proyecto;
+      ticket.numero_cotizacion = cotDoc.data().numero_cotizacion;
+      ticket.items = cotDoc.data().items || [];
+      ticket.condiciones_notas = cotDoc.data().condiciones_notas || '';
+      ticket.descripcion_cotizada = cotDoc.data().descripcion_trabajo || '';
+    } else {
+      ticket.items = [];
+    }
+  } else {
+    ticket.items = [];
+  }
+  return ticket;
+};
+
 // GET todos los tickets activos
-router.get('/', (req, res) => {
-  const sql = `
-    SELECT t.*, c.nombre as cliente_nombre, cot.proyecto as proyecto_nombre
-    FROM tickets t
-    LEFT JOIN clientes c ON t.cliente_id = c.id
-    LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
-    WHERE t.activo = 1
-    ORDER BY t.id DESC
-  `;
-  db.all(sql, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+router.get('/', async (req, res) => {
+  try {
+    const snapshot = await db.collection('tickets')
+                             .where('activo', '==', 1)
+                             .get();
+    let tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    tickets.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    tickets = await Promise.all(tickets.map(t => resolveRefs(t)));
+    res.json(tickets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET un ticket por ID
-router.get('/:id', (req, res) => {
-  const sql = `
-    SELECT t.*, c.nombre as cliente_nombre, c.rut as cliente_rut, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
-           cot.proyecto as proyecto_nombre, cot.numero_cotizacion as numero_cotizacion, t.tipo_trabajo
-    FROM tickets t
-    LEFT JOIN clientes c ON t.cliente_id = c.id
-    LEFT JOIN cotizaciones cot ON t.cotizacion_id = cot.id
-    WHERE t.id = ?
-  `;
-  db.get(sql, [req.params.id], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'Ticket no encontrado' });
-
-    // Si tiene cotización, traer ítems y notas
-    if (row.cotizacion_id) {
-      const sqlItems = `SELECT descripcion, cantidad FROM cotizacion_items WHERE cotizacion_id = ?`;
-      const sqlCotInfo = `SELECT condiciones_notas, descripcion_trabajo FROM cotizaciones WHERE id = ?`;
-
-      db.all(sqlItems, [row.cotizacion_id], (errItems, items) => {
-        db.get(sqlCotInfo, [row.cotizacion_id], (errCot, cotInfo) => {
-          res.json({
-            ...row,
-            items: items || [],
-            condiciones_notas: cotInfo ? cotInfo.condiciones_notas : '',
-            descripcion_cotizada: cotInfo ? cotInfo.descripcion_trabajo : ''
-          });
-        });
-      });
-    } else {
-      res.json({ ...row, items: [], condiciones_notas: '', descripcion_cotizada: '' });
-    }
-  });
+router.get('/:id', async (req, res) => {
+  try {
+    const doc = await db.collection('tickets').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Ticket no encontrado' });
+    let ticket = { id: doc.id, ...doc.data() };
+    ticket = await resolveRefs(ticket);
+    res.json(ticket);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST crear nuevo ticket
-router.post('/', (req, res) => {
-  const { 
-    cliente_id,
-    cotizacion_id,
-    direccion_trabajo,
-    telefono_contacto,
-    tipo_trabajo,
-    estado, 
-    prioridad, 
-    descripcion_problema, 
-    notas_tecnicas,
-    jornada,
-    fecha_agendada
-  } = req.body;
-
-  // Lógica: Si se asigna jornada, pasar a En Proceso automáticamente
-  let estadoFinal = estado || 'Pendiente';
-  if ((jornada === 'Mañana' || jornada === 'Tarde') && estadoFinal === 'Pendiente') {
+router.post('/', async (req, res) => {
+  const data = req.body;
+  let estadoFinal = data.estado || 'Pendiente';
+  if ((data.jornada === 'Mañana' || data.jornada === 'Tarde') && estadoFinal === 'Pendiente') {
     estadoFinal = 'En Proceso';
   }
 
-  // Generar número de ticket único TKT-XXXXXX
   const numero_ticket = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
   const fecha = new Date().toISOString().split('T')[0];
 
-  const sql = `
-    INSERT INTO tickets (
-      numero_ticket, cliente_id, cotizacion_id, direccion_trabajo, telefono_contacto, tipo_trabajo,
-      fecha_creacion, estado, prioridad, descripcion_problema, notas_tecnicas,
-      jornada, fecha_agendada
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  const nuevoTicket = {
+    numero_ticket,
+    cliente_id: data.cliente_id,
+    cotizacion_id: data.cotizacion_id || null,
+    direccion_trabajo: data.direccion_trabajo || null,
+    telefono_contacto: data.telefono_contacto || null,
+    tipo_trabajo: data.tipo_trabajo || null,
+    fecha_creacion: fecha,
+    estado: estadoFinal,
+    prioridad: data.prioridad || 'Media',
+    descripcion_problema: data.descripcion_problema || null,
+    notas_tecnicas: data.notas_tecnicas || '',
+    jornada: data.jornada || 'Sin Asignar',
+    fecha_agendada: data.fecha_agendada || null,
+    activo: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
 
-  db.run(sql, [
-    numero_ticket, 
-    cliente_id, 
-    cotizacion_id || null, 
-    direccion_trabajo,
-    telefono_contacto,
-    tipo_trabajo,
-    fecha, 
-    estadoFinal, 
-    prioridad || 'Media', 
-    descripcion_problema, 
-    notas_tecnicas || '',
-    jornada || 'Sin Asignar',
-    fecha_agendada || null
-  ], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: this.lastID, numero_ticket });
-  });
+  Object.keys(nuevoTicket).forEach(k => nuevoTicket[k] === undefined && delete nuevoTicket[k]);
+
+  try {
+    const docRef = await db.collection('tickets').add(nuevoTicket);
+    res.status(201).json({ id: docRef.id, numero_ticket });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// PUT actualizar ticket
-router.put('/:id', (req, res) => {
-  const { 
-    estado, prioridad, descripcion_problema, notas_tecnicas,
-    direccion_trabajo, telefono_contacto, tipo_trabajo,
-    jornada, fecha_agendada, fecha_termino
-  } = req.body;
+// PUT actualizar ticket y AUTO-CREAR COBRO
+router.put('/:id', async (req, res) => {
+  const data = req.body;
+  const { id } = req.params;
 
-  // Lógica de agendamiento automático
-  let nuevoEstado = estado;
-  if ((jornada === 'Mañana' || jornada === 'Tarde') && estado === 'Pendiente') {
+  let nuevoEstado = data.estado;
+  if ((data.jornada === 'Mañana' || data.jornada === 'Tarde') && data.estado === 'Pendiente') {
     nuevoEstado = 'En Proceso';
   }
 
-  const sql = `
-    UPDATE tickets 
-    SET estado = ?, prioridad = ?, descripcion_problema = ?, notas_tecnicas = ?, 
-        direccion_trabajo = ?, telefono_contacto = ?, tipo_trabajo = ?,
-        jornada = ?, fecha_agendada = ?, fecha_termino = ?
-    WHERE id = ?
-  `;
-  db.run(sql, [
-    nuevoEstado, prioridad, descripcion_problema, notas_tecnicas, 
-    direccion_trabajo, telefono_contacto, tipo_trabajo,
-    jornada, fecha_agendada, fecha_termino,
-    req.params.id
-  ], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    
-    const changes = this.changes;
-    
-    // Función para responder
-    const finish = () => {
-      if (!res.headersSent) {
-        res.json({ updated: changes, nuevoEstado });
-      }
+  try {
+    const ticketRef = db.collection('tickets').doc(id);
+    const ticketDoc = await ticketRef.get();
+    if (!ticketDoc.exists) return res.status(404).json({ error: 'Ticket no encontrado' });
+
+    const updates = {
+      estado: nuevoEstado,
+      prioridad: data.prioridad,
+      descripcion_problema: data.descripcion_problema,
+      notas_tecnicas: data.notas_tecnicas,
+      direccion_trabajo: data.direccion_trabajo,
+      telefono_contacto: data.telefono_contacto,
+      tipo_trabajo: data.tipo_trabajo,
+      jornada: data.jornada,
+      fecha_agendada: data.fecha_agendada,
+      fecha_termino: data.fecha_termino,
+      updated_at: new Date().toISOString()
     };
 
-    // Automatización: Si pasa a Terminado, generar Cobranza
-    if (nuevoEstado === 'Terminado' && changes > 0) {
-      console.log(`[AUTOMATIZACIÓN] Iniciando validación de cobranza para ticket ${req.params.id}`);
+    Object.keys(updates).forEach(k => updates[k] === undefined && delete updates[k]);
+
+    const oldEstado = ticketDoc.data().estado;
+    await ticketRef.update(updates);
+
+    // Si pasa a Terminado, generar Cobranza si no existe
+    if (nuevoEstado === 'Terminado' && oldEstado !== 'Terminado') {
+      console.log(`[AUTOMATIZACIÓN] Iniciando validación de cobranza para ticket ${id}`);
+      const cobrosSnap = await db.collection('cobranzas').where('ticket_id', '==', id).where('activo', '==', 1).limit(1).get();
       
-      // 1. Verificar si YA existe una cobranza para este ticket
-      const checkSql = `SELECT id FROM cobranzas WHERE ticket_id = ? AND activo = 1`;
-      db.get(checkSql, [req.params.id], (errCheck, existing) => {
-        if (errCheck || existing) {
-          if (existing) console.log(`[AUTOMATIZACIÓN] Ticket ${req.params.id} ya tiene cobranza. No se crea otra.`);
-          return finish();
+      if (!cobrosSnap.empty) {
+        console.log(`[AUTOMATIZACIÓN] Ticket ${id} ya tiene cobranza.`);
+      } else {
+        const ticketFinalData = { ...ticketDoc.data(), ...updates };
+        const numero_cobro = `COB-${Math.floor(100000 + Math.random() * 900000)}`;
+        let monto = 0;
+        
+        if (ticketFinalData.cotizacion_id) {
+           const cotDoc = await db.collection('cotizaciones').doc(ticketFinalData.cotizacion_id).get();
+           if (cotDoc.exists) monto = cotDoc.data().total_final || 0;
         }
 
-        // 2. Traer datos frescos del ticket
-        const ticketSql = `SELECT * FROM tickets WHERE id = ?`;
-        db.get(ticketSql, [req.params.id], (errT, ticket) => {
-          if (errT || !ticket) return finish();
+        const nuevaCobranza = {
+           numero_cobro,
+           ticket_id: id,
+           cliente_id: ticketFinalData.cliente_id,
+           cotizacion_id: ticketFinalData.cotizacion_id || null,
+           fecha_creacion: new Date().toISOString().split('T')[0],
+           estado: 'En Cobro',
+           monto_total: monto,
+           activo: 1,
+           created_at: new Date().toISOString(),
+           updated_at: new Date().toISOString()
+        };
 
-          console.log(`[AUTOMATIZACIÓN] Generando cobro para Ticket: ${ticket.numero_ticket}`);
-          const numero_cobro = `COB-${Math.floor(100000 + Math.random() * 900000)}`;
-          
-          if (ticket.cotizacion_id) {
-            db.get(`SELECT total_final FROM cotizaciones WHERE id = ?`, [ticket.cotizacion_id], (errC, cot) => {
-              const monto = cot ? (cot.total_final || 0) : 0;
-              const insSql = `INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, cotizacion_id, monto_total) VALUES (?, ?, ?, ?, ?)`;
-              db.run(insSql, [numero_cobro, ticket.id, ticket.cliente_id, ticket.cotizacion_id, monto], (errIns) => {
-                if (errIns) console.error("[AUTOMATIZACIÓN] Error al insertar:", errIns);
-                finish();
-              });
-            });
-          } else {
-            const insSql = `INSERT INTO cobranzas (numero_cobro, ticket_id, cliente_id, monto_total) VALUES (?, ?, ?, 0)`;
-            db.run(insSql, [numero_cobro, ticket.id, ticket.cliente_id], (errIns) => {
-              if (errIns) console.error("[AUTOMATIZACIÓN] Error al insertar base:", errIns);
-              finish();
-            });
-          }
-        });
-      });
-    } else {
-      finish();
+        await db.collection('cobranzas').add(nuevaCobranza);
+        console.log(`[AUTOMATIZACIÓN] Generando cobro para Ticket: ${ticketFinalData.numero_ticket}`);
+      }
     }
-  });
+
+    res.json({ updated: 1, nuevoEstado });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // DELETE (soft delete) ticket
-router.delete('/:id', (req, res) => {
-  db.run('UPDATE tickets SET activo = 0 WHERE id = ?', [req.params.id], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ archived: this.changes });
-  });
+router.delete('/:id', async (req, res) => {
+  try {
+    const docRef = db.collection('tickets').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Ticket no encontrada' });
+
+    await docRef.update({ activo: 0, updated_at: new Date().toISOString() });
+    res.json({ archived: 1 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

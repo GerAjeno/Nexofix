@@ -177,11 +177,11 @@ export default function CotizacionPDF({ data, onClose, modoOculto = false, onEma
                       <td style={{ padding: '12px 15px', textAlign: 'center', color: '#4b5563' }}>{item.cantidad}</td>
                       <td style={{ padding: '12px 15px', textAlign: 'right', color: '#4b5563' }}>{formatearDinero(item.precio_unitario)}</td>
                       <td style={{ padding: '12px 15px', textAlign: 'right', color: isBoleta ? '#4b5563' : '#1f2937', fontWeight: isBoleta ? 'normal' : '500' }}>
-                        {formatearDinero(item.total)}
+                        {formatearDinero(item.total || (item.cantidad * item.precio_unitario))}
                       </td>
                       {isBoleta && (
                         <td style={{ padding: '12px 15px', textAlign: 'right', color: '#1f2937', fontWeight: 'bold', backgroundColor: '#f0f9ff' }}>
-                          {formatearDinero(Math.round(item.total * 1.1525))}
+                          {formatearDinero(Math.round((item.total || (item.cantidad * item.precio_unitario)) * 1.1525))}
                         </td>
                       )}
                     </tr>

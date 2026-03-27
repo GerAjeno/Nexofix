@@ -4,14 +4,10 @@ import { db } from '../database.js';
 
 const router = express.Router();
 
-// Helper para obtener las credenciales actuales de SMTP
-const getSmtpConfig = () => {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT smtp_host, smtp_puerto, smtp_user, smtp_pass, empresa_nombre FROM ajustes_general WHERE id = 1", (err, row) => {
-      if (err) reject(err);
-      resolve(row);
-    });
-  });
+const getSmtpConfig = async () => {
+    const doc = await db.collection('configuracion').doc('general').get();
+    if (doc.exists) return doc.data();
+    return {};
 };
 
 // POST /api/email/enviar-cotizacion
@@ -47,15 +43,15 @@ router.post('/enviar-cotizacion', async (req, res) => {
     // Validar conexión
     await transporter.verify();
 
-    // Eliminar el prefijo 'data:application/pdf;base64,' o 'data:image/...' si existe para el buffer
+    // Eliminar el prefijo 'data:application/pdf;base64,'
     const base64Data = base64Pdf.replace(/^data:application\/pdf;base64,/, "");
 
     // Opciones del correo
     const mailOptions = {
-      from: `"${config.empresa_nombre}" <${config.smtp_user}>`,
+      from: `"${config.empresa_nombre || 'NexoFix'}" <${config.smtp_user}>`,
       to: clienteEmail,
-      subject: `Cotización de Servicio ${numeroCotizacion || ''} - ${config.empresa_nombre}`,
-      text: `Estimado/a ${clienteNombre},\n\nAdjunto le enviamos nuestra última propuesta técnico-comercial para su revisión.\n\nQuedamos a su entera disposición para cualquier consulta.\n\nAtte.\nEquipo ${config.empresa_nombre}`,
+      subject: `Cotización de Servicio ${numeroCotizacion || ''} - ${config.empresa_nombre || ''}`,
+      text: `Estimado/a ${clienteNombre},\n\nAdjunto le enviamos nuestra última propuesta técnico-comercial para su revisión.\n\nQuedamos a su entera disposición para cualquier consulta.\n\nAtte.\nEquipo ${config.empresa_nombre || 'NexoFix'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
           <h2 style="color: #007bff;">Propuesta Técnico Comercial</h2>
@@ -67,7 +63,7 @@ router.post('/enviar-cotizacion', async (req, res) => {
           <hr style="border: none; border-top: 1px solid #ccc; margin: 20px 0;" />
           <p style="font-size: 12px; color: #666;">
             Atentamente,<br/>
-            <strong>Equipo Operativo de ${config.empresa_nombre}</strong>
+            <strong>Equipo Operativo de ${config.empresa_nombre || 'NexoFix'}</strong>
           </p>
         </div>
       `,

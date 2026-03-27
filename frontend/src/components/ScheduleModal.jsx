@@ -91,7 +91,7 @@ export default function ScheduleModal({ ticket, onClose, onSave }) {
         <div className="modal-header">
           <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Calendar size={20} className="text-primary" />
-            Agendar TKT-{ticket.id}
+            Agendar {ticket.numero_ticket || `TKT-${ticket.id}`}
           </h2>
           <button className="btn-close" onClick={onClose}><X size={24} /></button>
         </div>
