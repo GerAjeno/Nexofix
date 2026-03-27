@@ -3,6 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { db } from './database.js';
 import clientesRoutes from './routes/clientes.js';
 import cotizacionesRoutes from './routes/cotizaciones.js';
@@ -78,7 +79,9 @@ app.post('/api/upload', upload.single('imagen'), (req, res) => {
 app.use('/uploads', express.static(uploadDir));
 
 // Servir el frontend de React compilado de forma nativa desde el mismo puerto
-const frontendDistPath = path.join(process.cwd(), '../frontend/dist');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendDistPath));
 
 app.use((req, res) => {

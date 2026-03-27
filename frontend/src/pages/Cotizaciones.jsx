@@ -106,7 +106,7 @@ export default function Cotizaciones() {
         numeroCotizacion: emailData.numero_cotizacion
       };
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/email/enviar-cotizacion`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/email/enviar-cotizacion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -287,3 +287,4 @@ export default function Cotizaciones() {
     </div>
   );
 }
+

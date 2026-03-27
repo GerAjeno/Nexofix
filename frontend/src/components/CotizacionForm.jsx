@@ -797,3 +797,4 @@ export default function CotizacionForm({ cotizacion, onClose, onSave }) {
     </div>
   );
 }
+

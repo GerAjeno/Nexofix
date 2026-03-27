@@ -22,7 +22,7 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/cobranzas/${cobranzaId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/cobranzas/${cobranzaId}`);
         const json = await response.json();
         setData(json);
 
@@ -230,3 +230,4 @@ export default function CobranzaPDF({ cobranzaId, onClose }) {
     </div>
   );
 }
+

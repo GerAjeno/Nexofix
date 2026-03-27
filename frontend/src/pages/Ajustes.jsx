@@ -71,7 +71,7 @@ export default function Ajustes() {
         smtp_pass: data.smtp_pass || ''
       });
       setPreviewLogo(data.empresa_logo && data.empresa_logo !== '/logo.png'
-        ? `http://localhost:3000${data.empresa_logo}`
+        ? `${data.empresa_logo.startsWith('/api') || data.empresa_logo.startsWith('http') ? '' : ''}${data.empresa_logo}`
         : null
       );
     } catch (err) {
@@ -360,3 +360,4 @@ export default function Ajustes() {
     </div>
   );
 }
+

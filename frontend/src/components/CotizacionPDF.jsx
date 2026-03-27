@@ -258,3 +258,4 @@ export default function CotizacionPDF({ data, onClose, modoOculto = false, onEma
     </div>
   );
 }
+

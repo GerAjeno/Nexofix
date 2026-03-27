@@ -27,3 +27,4 @@ export const formatRut = (value) => {
   let result = clean.slice(0, -1) + '-' + clean.slice(-1);
   return result;
 };
+

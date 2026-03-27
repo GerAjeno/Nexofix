@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/plantillas`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/plantillas`;
 
 export const plantillasService = {
   getTextos: async (tipo) => {
@@ -34,3 +34,4 @@ export const plantillasService = {
     return response.data;
   }
 };
+

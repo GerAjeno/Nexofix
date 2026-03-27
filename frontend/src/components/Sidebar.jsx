@@ -47,3 +47,4 @@ export default function Sidebar({ theme, toggleTheme, isOpen, onClose }) {
     </aside>
   );
 }
+

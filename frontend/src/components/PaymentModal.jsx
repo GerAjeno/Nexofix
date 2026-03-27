@@ -145,3 +145,4 @@ export default function PaymentModal({ cobranza, onClose, onSave }) {
     </div>
   );
 }
+

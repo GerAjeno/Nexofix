@@ -184,3 +184,4 @@ export default function TicketPDF({ data, onClose }) {
     </div>
   );
 }
+
