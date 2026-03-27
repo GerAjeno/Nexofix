@@ -77,11 +77,19 @@ app.post('/api/upload', upload.single('imagen'), (req, res) => {
 // Servir archivos estáticos desde el directorio 'uploads'
 app.use('/uploads', express.static(uploadDir));
 
+// Servir el frontend de React compilado de forma nativa desde el mismo puerto
+const frontendDistPath = path.join(process.cwd(), '../frontend/dist');
+app.use(express.static(frontendDistPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
+
 // Ruta básica de salud y comprobación de estado de la API
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'La API de NexoFix está en funcionamiento' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log(`Servidor de NexoFix (Frontend + API) ejecutándose en http://localhost:${PORT}`);
 });
