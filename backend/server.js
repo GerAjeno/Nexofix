@@ -19,6 +19,10 @@ import usuariosRoutes from './routes/usuarios.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuración de rutas estáticas fundamentales ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Middlewares
 const allowedOrigins = ['https://ger-cloud.cc', 'https://nexofix.ger-cloud.cc', 'http://localhost:5173'];
 app.use(cors({
@@ -91,8 +95,6 @@ app.post('/api/upload', upload.single('imagen'), async (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Servir el frontend de React compilado de forma nativa desde el mismo puerto
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendDistPath));
 
