@@ -4,7 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { db } from './database.js';
+import { db, storageBucket } from './database.js';
 import clientesRoutes from './routes/clientes.js';
 import cotizacionesRoutes from './routes/cotizaciones.js';
 import plantillasRoutes from './routes/plantillas.js';
@@ -34,20 +34,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Configurar el directorio para subida de archivos
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// Usar memoria RAM para interceptar el archivo en caliente antes de pasarlo a Firebase
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Rutas de API
@@ -62,17 +50,41 @@ app.use('/api/ajustes', ajustesRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 
-// Endpoint de subida de archivos para notas especiales o imágenes
-app.post('/api/upload', upload.single('imagen'), (req, res) => {
+// Endpoint de subida de archivos reescrito para Firebase Storage
+app.post('/api/upload', upload.single('imagen'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
-  // Retornar la ruta relativa al servidor para que el frontend pueda registrarla
-  res.status(200).json({
-    message: 'Imagen subida exitosamente',
-    filename: req.file.filename,
-    path: `/uploads/${req.file.filename}`
-  });
+  
+  if (!storageBucket) {
+    return res.status(500).json({ error: 'Firebase Storage no está inicializado en este proyecto.' });
+  }
+
+  try {
+    const safeFilename = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filename = `uploads/${Date.now()}-${safeFilename}`;
+    const fileRef = storageBucket.file(filename);
+    
+    // Subir el buffer de memoria a la Nube de Google
+    await fileRef.save(req.file.buffer, {
+      metadata: { contentType: req.file.mimetype }
+    });
+
+    // Generamos un enlace de lectura firmado válido hasta el siglo XXV
+    const [signedUrl] = await fileRef.getSignedUrl({
+      action: 'read',
+      expires: '03-09-2491'
+    });
+
+    res.status(200).json({
+      message: 'Imagen subida exitosamente a Firebase Storage',
+      filename: filename,
+      path: signedUrl
+    });
+  } catch (error) {
+    console.error('Error subiendo imagen a Firebase Storage:', error);
+    res.status(500).json({ error: 'Fallo al procesar archivo en la nube.' });
+  }
 });
 
 // Servir archivos estáticos desde el directorio 'uploads'
